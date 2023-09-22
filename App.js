@@ -83,10 +83,12 @@ const ChessBoard = () => {
     ['n', 'q', 'k', 'r'],
   ]);
 
-  let whiteKingRow = 0;
-  let whiteKingCol = 2;
-  let blackKingRow = 7;
-  let blackKingCol = 2;
+  const [king, setKing] = useState({
+    whiteKingRow: 0,
+    whiteKingCol: 2,
+    blackKingRow: 7,
+    blackKingCol: 2,
+  });
 
   const CheckForEnemyPiece = (rowIndex, colIndex, white) => {
     if(currentChessBoard[rowIndex][colIndex] == null){
@@ -148,7 +150,13 @@ const ChessBoard = () => {
       if(selectedPiece.rowIndex == rowIndex && selectedPiece.colIndex == colIndex){
         return;
       }
-
+      if(selectedPiece.type === "K"){
+        setKing.whiteKingRow = rowIndex-1;
+        setKing.whiteKingCol = colIndex;
+      }else if(selectedPiece.type === "k"){
+        setKing.blackKingRow = rowIndex-1;
+        setKing.blackKingCol = colIndex;
+      }
       setCurrentTurn(prevState => !prevState);
 
       setChessBoard(prevState => {
@@ -189,6 +197,14 @@ const ChessBoard = () => {
               
               let testState = JSON.parse(JSON.stringify(currentChessBoard));
               
+              if(lastPiece === "K"){
+                console.log(king.whiteKingRow);
+                setKing.whiteKingRow = i;
+                setKing.whiteKingCol = j;
+              }else if(lastPiece === "k"){
+                setKing.blackKingRow = i;
+                setKing.blackKingCol = j;
+              }
               
               testState[rowIndex-1][colIndex] = null;
               //console.log(`1. Before ${ selectedPiece.type}`);
@@ -210,17 +226,15 @@ const ChessBoard = () => {
         return highlightsState;
       }
       function CheckForLegality(testArray){
-        let rowIdx = currentTurn ? whiteKingRow : blackKingRow;
-        let colIdx = currentTurn ? whiteKingCol : blackKingCol;
+        let rowIdx = currentTurn ? king.whiteKingRow : king.blackKingRow;
+        let colIdx = currentTurn ? king.whiteKingCol : king.blackKingCol;
         //First check for diagonals (queen)
         function legalityLoop(rowModifier, colModifier, maxSteps, checkForRooks = false){
           for (let i = 1; i <= maxSteps; i++) {
             const newRow = rowIdx + (i * rowModifier);
             const newCol = colIdx + (i * colModifier);
-            
             // Check boundary conditions for both rows and columns
             if (newRow >= 0 && newRow < testArray.length && newCol >= 0 && newCol <= 3) {
-              console.log(`${rowModifier} ${newRow} ${newCol} ${testArray[newRow][newCol] }`);
               if (testArray[newRow][newCol] !== null) {
                 if((currentTurn ? testArray[newRow][newCol] === "q" : testArray[newRow][newCol] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow][newCol] === "r" : testArray[newRow][newCol] === "R"))){
                   return false;
@@ -247,7 +261,6 @@ const ChessBoard = () => {
           }
           return true;
         }
-        console.log("NEW TEST");
         //right-top movement
         if (!legalityLoop(1, 1, 7)) return false;
         //right-down movement
@@ -475,6 +488,31 @@ const ChessBoard = () => {
               return CheckMoves(newState, currentChessBoard, chessPieceSelected);
           });
           break;
+          case "k":
+          case "K":
+            // Queen moves both in cardinal directions and diagonally
+            setHighLights((prevState) => {
+               
+              // top movement
+              updateStateForDirection(1, 0, 1);
+              // down movement
+              updateStateForDirection(-1, 0, 1);
+              // right movement
+              updateStateForDirection(0, 1, 1);
+              // left movement
+              updateStateForDirection(0, -1, 1);
+
+              //right-top movement
+              updateStateForDirection(1, 1, 1);
+              //right-down movement
+              updateStateForDirection(1, -1, 1);
+              //left-top movement
+              updateStateForDirection(-1, 1, 1);
+              //right-down movement
+              updateStateForDirection(-1, -1, 1);
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected);
+            });
+            break;
       } 
     }
   }

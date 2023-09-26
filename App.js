@@ -151,11 +151,17 @@ const ChessBoard = () => {
         return;
       }
       if(selectedPiece.type === "K"){
-        setKing.whiteKingRow = rowIndex-1;
-        setKing.whiteKingCol = colIndex;
+        setKing(prevState => ({
+          ...prevState,
+          whiteKingRow: rowIndex-1,
+          whiteKingCol: colIndex,
+        }));
       }else if(selectedPiece.type === "k"){
-        setKing.blackKingRow = rowIndex-1;
-        setKing.blackKingCol = colIndex;
+        setKing(prevState => ({
+          ...prevState,
+          blackKingRow: rowIndex-1,
+          blackKingCol: colIndex,
+        }));
       }
       setCurrentTurn(prevState => !prevState);
 
@@ -174,6 +180,7 @@ const ChessBoard = () => {
 
       let chessPieceSelected = currentChessBoard[rowIndex-1][colIndex];
         
+      console.log(king.whiteKingRow);
       //setHighLights(DEFAULT_HIGHLIGHTS);
       setSelectedPiece({
           row: rowIndex, 
@@ -191,19 +198,23 @@ const ChessBoard = () => {
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
       function CheckMoves(state, boardCopy, lastPiece){
         let highlightsState = state;
+        let tempKing = { 
+          whiteKingRow: king.whiteKingRow, 
+          whiteKingCol: king.whiteKingCol, 
+          blackKingRow: king.blackKingRow, 
+          blackKingCol: king.blackKingCol 
+        };
         for(let i = 0; i < state.length; i++){
           for(let j = 0; j < state[i].length; j++){
             if(state[i][j]){
               
               let testState = JSON.parse(JSON.stringify(currentChessBoard));
-              
-              if(lastPiece === "K"){
-                console.log(king.whiteKingRow);
-                setKing.whiteKingRow = i;
-                setKing.whiteKingCol = j;
+              if(lastPiece === "K"){  
+                tempKing.whiteKingRow = i;
+                tempKing.whiteKingCol = j;
               }else if(lastPiece === "k"){
-                setKing.blackKingRow = i;
-                setKing.blackKingCol = j;
+                tempKing.blackKingRow = i,
+                tempKing.blackKingCol = j
               }
               
               testState[rowIndex-1][colIndex] = null;
@@ -211,7 +222,7 @@ const ChessBoard = () => {
               testState[i][j] = lastPiece;
               //console.log(`2. After ${currentChessBoard}`);
               
-              if(!CheckForLegality(testState)){
+              if(!CheckForLegality(testState, tempKing)){
                 highlightsState[i][j] = false;
               }
               else{
@@ -225,16 +236,16 @@ const ChessBoard = () => {
         }
         return highlightsState;
       }
-      function CheckForLegality(testArray){
-        let rowIdx = currentTurn ? king.whiteKingRow : king.blackKingRow;
-        let colIdx = currentTurn ? king.whiteKingCol : king.blackKingCol;
+      function CheckForLegality(testArray, kingM){
+        let rowIdx = currentTurn ? kingM.whiteKingRow : kingM.blackKingRow;
+        let colIdx = currentTurn ? kingM.whiteKingCol : kingM.blackKingCol;
         //First check for diagonals (queen)
         function legalityLoop(rowModifier, colModifier, maxSteps, checkForRooks = false){
           for (let i = 1; i <= maxSteps; i++) {
             const newRow = rowIdx + (i * rowModifier);
             const newCol = colIdx + (i * colModifier);
             // Check boundary conditions for both rows and columns
-            if (newRow >= 0 && newRow < testArray.length && newCol >= 0 && newCol <= 3) {
+            if (newRow >= 0 && newRow < testArray.length && newCol > 0 && newCol < 3) {
               if (testArray[newRow][newCol] !== null) {
                 if((currentTurn ? testArray[newRow][newCol] === "q" : testArray[newRow][newCol] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow][newCol] === "r" : testArray[newRow][newCol] === "R"))){
                   return false;
@@ -247,20 +258,84 @@ const ChessBoard = () => {
             }
             else if (newRow >= 0 && newRow < testArray.length){
               // PORTAL
-              if (testArray[newRow][newCol < 0 ? 3 : 0] !== null) {
-                if((currentTurn ? testArray[newRow][newCol] === "q" : testArray[newRow][newCol] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow][newCol] === "r" : testArray[newRow][newCol] === "R"))){
-                  return false;
-                }else{
-                  break;
+              if(newCol > 3){
+                for(let j = 0; j <= 3; j++){
+                  if(newRow+j*rowModifier > 7 || newRow+j*rowModifier < 0){
+                    break;
+                  }
+                  if (testArray[newRow+j*rowModifier][0+j] !== null) {
+                    if(checkForRooks){
+                      if(currentTurn ? testArray[newRow][0+j] === "r" : testArray[newRow][0+j] === "R"){
+                        return false;
+                      }
+                    }
+                    if((currentTurn ? testArray[newRow+j*rowModifier][0+j] === "q" : testArray[newRow+j*rowModifier][0+j] === "Q")){
+                      return false;
+                    }else{
+                      break;
+                    }
+                  } 
+                  continue;
                 }
-              } 
-              continue;
+              }else if (newCol < 0){
+                for(let j = 0; j <= 3; j++){
+                  if(newRow+j*rowModifier > 7 || newRow+j*rowModifier < 0){
+                    break;
+                  }
+                  if (testArray[newRow+j][3-j] !== null) {
+                    if(checkForRooks){
+                      if(currentTurn ? testArray[newRow][3-j] === "r" : testArray[newRow][3-j] === "R"){
+                        return false;
+                      }
+                    }
+                    if((currentTurn ? testArray[newRow+j*rowModifier][3-j] === "q" : testArray[newRow+j*rowModifier][3-j] === "Q")){
+                      return false;
+                    }else{
+                      break;
+                    }
+                  } 
+                  continue;
+                }
+              }
+              
             }else{
               break;
             }
           }
           return true;
         }
+        function CheckIfInBoundries(desiredRow, desiredCol){
+          if(desiredRow > 7 || desiredRow < 0){
+            return true;
+          }
+          if(desiredCol < 0 || desiredCol > 3){
+            if(currentChessBoard[desiredRow][desiredCol < 0 ? 3 : 0] !== null){
+              if((currentTurn ? testArray[desiredRow][desiredCol] === "n" : testArray[desiredRow][desiredCol] === "N")){
+                return false;
+              }
+            }
+            return true;
+          }
+          if(currentChessBoard[desiredRow][desiredCol] !== null){
+            if((currentTurn ? testArray[desiredRow][desiredCol] === "n" : testArray[desiredRow][desiredCol] === "N")){
+              return false;
+            }
+            return true;
+          }
+          return true;
+        }
+
+        if (!CheckIfInBoundries(rowIdx + 2, colIdx + 1)) return false;
+        if (!CheckIfInBoundries(rowIdx + 2, colIdx - 1)) return false;
+
+        if (!CheckIfInBoundries(rowIdx - 2, colIdx + 1)) return false;
+        if (!CheckIfInBoundries(rowIdx - 2, colIdx - 1)) return false;
+
+        if (!CheckIfInBoundries(rowIdx + 1, colIdx + 2)) return false;
+        if (!CheckIfInBoundries(rowIdx - 1, colIdx + 2)) return false;
+
+        if (!CheckIfInBoundries(rowIdx + 1, colIdx - 2)) return false;
+        if (!CheckIfInBoundries(rowIdx - 1, colIdx - 2)) return false;
         //right-top movement
         if (!legalityLoop(1, 1, 7)) return false;
         //right-down movement
@@ -277,7 +352,33 @@ const ChessBoard = () => {
         if (!legalityLoop(0, 1, 4, true)) return false;
         // left movement
         if (!legalityLoop(0, -1, 4, true)) return false;
-    
+        //console.log(`${kingM.whiteKingRow} ${kingM.whiteKingCol} Pawn`);
+        //Check for pawns
+        if(currentTurn){
+          //Check for black pawns
+          let colIndexDiag = colIdx - 1;
+          //console.log(`${testArray[rowIdx+1][colIndexDiag < 0 ? 3 : colIndexDiag]}`)
+          if(testArray[rowIdx+1][colIndexDiag < 0 ? 3 : colIndexDiag] !== null && testArray[rowIdx+1][colIndexDiag < 0 ? 3 : colIndexDiag] === "p") 
+          {
+            return false;
+          }
+          colIndexDiag += 2;
+          if(testArray[rowIdx+1][colIndexDiag > 3 ? 0 : colIndexDiag] !== null && testArray[rowIdx+1][colIndexDiag > 3 ? 0 : colIndexDiag] === "p") 
+          {
+            return false;
+          }
+        }else{
+          let colIndexDiag = colIdx - 1;
+          if(testArray[rowIdx-1][colIndexDiag < 0 ? 3 : colIndexDiag] !== null && testArray[rowIdx-1][colIndexDiag < 0 ? 3 : colIndexDiag] === "P") 
+          {
+            return false;
+          }
+          colIndexDiag += 2;
+          if(testArray[rowIdx-1][colIndexDiag > 3 ? 0 : colIndexDiag] !== null && testArray[rowIdx-1][colIndexDiag > 3 ? 0 : colIndexDiag] === "P") 
+          {
+            return false;
+          }
+        }
         return true;
       }
       function updateStateForDirection(rowModifier, colModifier, maxSteps) {
@@ -322,25 +423,15 @@ const ChessBoard = () => {
             setHighLights((prevState) => {
               
 
-                let colIndexDiagL = colIndex - 1;
-                if(colIndexDiagL < 0){
-                    colIndexDiagL = 3;
-                }
-                
-                if(CheckForEnemyPiece(rowIndex,colIndexDiagL,pieceColorWhite)) // Weird way to check for black pieces
+                let colIndexDiag = colIndex - 1;
+                if(CheckForEnemyPiece(rowIndex,colIndexDiag < 0 ? 3 : colIndexDiag,pieceColorWhite)) 
                 {
-                    
-                    newState[rowIndex][colIndexDiagL] = true;
+                    newState[rowIndex][colIndexDiag < 0 ? 3 : colIndexDiag] = true;
                 }
-
-                let colIndexDiagR = colIndex + 1;
-                if(colIndexDiagR > 3){
-                    colIndexDiagR = 0;
-                }
-                
-                if(CheckForEnemyPiece(rowIndex,colIndexDiagR,pieceColorWhite)) // Weird way to check for black pieces
+                colIndexDiag += 2;
+                if(CheckForEnemyPiece(rowIndex,colIndexDiag > 3 ? 0 : colIndexDiag,pieceColorWhite)) 
                 {
-                    newState[rowIndex][colIndexDiagR] = true;
+                    newState[rowIndex][colIndexDiag > 3 ? 0 : colIndexDiag] = true;
                 }
                 
                 // Normal movement
@@ -367,46 +458,36 @@ const ChessBoard = () => {
             setHighLights((prevState) => {
                 
 
-                let colIndexDiagL = colIndex - 1;
-                if(colIndexDiagL < 0){
-                    colIndexDiagL = 3;
-                }
-
-                if(CheckForEnemyPiece(rowIndex-2,colIndexDiagL,pieceColorWhite)) // Weird way to check for black pieces
-                {
-                    
-                    newState[rowIndex-2][colIndexDiagL] = true;
-                }
-
-                let colIndexDiagR = colIndex + 1;
-                if(colIndexDiagR > 3){
-                    colIndexDiagR = 0;
-                }
-                
-                if(CheckForEnemyPiece(rowIndex-2,colIndexDiagR,pieceColorWhite)) // Weird way to check for black pieces
-                {
-                    
-                    newState[rowIndex-2][colIndexDiagR] = true;
-                }
-                
-                // Normal movement
-                if (rowIndex === 7) {
-                    for (let i = 1; i <= 2; i++) {
-                        if (currentChessBoard[rowIndex - 1 - i][colIndex] !== null) {
-                            break;
-                        }
-                        newState[rowIndex - 1 - i] = [...newState[rowIndex - 1 - i]];
-                        newState[rowIndex - 1 - i][colIndex] = true;
-                    }
-                    
-                } else {
-                    if (currentChessBoard[rowIndex-2][colIndex] === null) {
-                        newState[rowIndex-2] = [...newState[rowIndex-2]];
-                        newState[rowIndex-2][colIndex] = true;
-                    }
-                }
-                
-                return CheckMoves(newState, currentChessBoard, chessPieceSelected);
+              let colIndexDiag = colIndex - 1;
+              if(CheckForEnemyPiece(rowIndex-2,colIndexDiag < 0 ? 3 : colIndexDiag,pieceColorWhite)) 
+              {
+                  newState[rowIndex-2][colIndexDiag < 0 ? 3 : colIndexDiag] = true;
+              }
+              colIndexDiag += 2;
+              if(CheckForEnemyPiece(rowIndex-2,colIndexDiag > 3 ? 0 : colIndexDiag,pieceColorWhite)) 
+              {
+                  newState[rowIndex-2][colIndexDiag > 3 ? 0 : colIndexDiag] = true;
+              }
+            
+              
+              // Normal movement
+              if (rowIndex === 7) {
+                  for (let i = 1; i <= 2; i++) {
+                      if (currentChessBoard[rowIndex - 1 - i][colIndex] !== null) {
+                          break;
+                      }
+                      newState[rowIndex - 1 - i] = [...newState[rowIndex - 1 - i]];
+                      newState[rowIndex - 1 - i][colIndex] = true;
+                  }
+                  
+              } else {
+                  if (currentChessBoard[rowIndex-2][colIndex] === null) {
+                      newState[rowIndex-2] = [...newState[rowIndex-2]];
+                      newState[rowIndex-2][colIndex] = true;
+                  }
+              }
+              
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected);
             });
             break;
           case "r":

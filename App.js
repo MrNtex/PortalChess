@@ -244,6 +244,7 @@ const ChessBoard = () => {
           for (let i = 1; i <= maxSteps; i++) {
             const newRow = rowIdx + (i * rowModifier);
             const newCol = colIdx + (i * colModifier);
+            console.log(`NEW ROW AND COL: ${rowIdx} ${colIdx}`);
             // Check boundary conditions for both rows and columns
             if (newRow >= 0 && newRow < testArray.length && newCol > 0 && newCol < 3) {
               if (testArray[newRow][newCol] !== null) {
@@ -266,10 +267,12 @@ const ChessBoard = () => {
                   if (testArray[newRow+j*rowModifier][0+j] !== null) {
                     if(checkForRooks){
                       if(currentTurn ? testArray[newRow][0+j] === "r" : testArray[newRow][0+j] === "R"){
+                        console.log(`${testArray[newRow][0+j]}`);
                         return false;
                       }
                     }
                     if((currentTurn ? testArray[newRow+j*rowModifier][0+j] === "q" : testArray[newRow+j*rowModifier][0+j] === "Q")){
+                      console.log(`${newRow} ${newCol}. ${newRow+j*rowModifier} ${0+j}`);
                       return false;
                     }else{
                       break;
@@ -285,10 +288,12 @@ const ChessBoard = () => {
                   if (testArray[newRow+j][3-j] !== null) {
                     if(checkForRooks){
                       if(currentTurn ? testArray[newRow][3-j] === "r" : testArray[newRow][3-j] === "R"){
+                        console.log("TEST");
                         return false;
                       }
                     }
                     if((currentTurn ? testArray[newRow+j*rowModifier][3-j] === "q" : testArray[newRow+j*rowModifier][3-j] === "Q")){
+                      console.log("TEST");
                       return false;
                     }else{
                       break;

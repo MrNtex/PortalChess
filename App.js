@@ -180,7 +180,6 @@ const ChessBoard = () => {
 
       let chessPieceSelected = currentChessBoard[rowIndex-1][colIndex];
         
-      console.log(king.whiteKingRow);
       //setHighLights(DEFAULT_HIGHLIGHTS);
       setSelectedPiece({
           row: rowIndex, 
@@ -196,14 +195,15 @@ const ChessBoard = () => {
       let pieceColorWhite = (chessPieceSelected == chessPieceSelected.toUpperCase()) ? true : false;
       
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
+      let tempKing = { 
+        whiteKingRow: king.whiteKingRow, 
+        whiteKingCol: king.whiteKingCol, 
+        blackKingRow: king.blackKingRow, 
+        blackKingCol: king.blackKingCol 
+      };
       function CheckMoves(state, boardCopy, lastPiece){
         let highlightsState = state;
-        let tempKing = { 
-          whiteKingRow: king.whiteKingRow, 
-          whiteKingCol: king.whiteKingCol, 
-          blackKingRow: king.blackKingRow, 
-          blackKingCol: king.blackKingCol 
-        };
+        
         for(let i = 0; i < state.length; i++){
           for(let j = 0; j < state[i].length; j++){
             if(state[i][j]){
@@ -237,72 +237,67 @@ const ChessBoard = () => {
         return highlightsState;
       }
       function CheckForLegality(testArray, kingM){
-        let rowIdx = currentTurn ? kingM.whiteKingRow : kingM.blackKingRow;
-        let colIdx = currentTurn ? kingM.whiteKingCol : kingM.blackKingCol;
+        let rowIdx = currentTurn ? tempKing.whiteKingRow : tempKing.blackKingRow;
+        let colIdx = currentTurn ? tempKing.whiteKingCol : tempKing.blackKingCol;
         //First check for diagonals (queen)
         function legalityLoop(rowModifier, colModifier, maxSteps, checkForRooks = false){
           for (let i = 1; i <= maxSteps; i++) {
             const newRow = rowIdx + (i * rowModifier);
             const newCol = colIdx + (i * colModifier);
-            console.log(`NEW ROW AND COL: ${rowIdx} ${colIdx}`);
             // Check boundary conditions for both rows and columns
-            if (newRow >= 0 && newRow < testArray.length && newCol > 0 && newCol < 3) {
+            console.log(`${newRow} ${newCol}`)
+            if (newRow >= 0 && newRow < testArray.length && newCol >= 0 && newCol <= 3) {
               if (testArray[newRow][newCol] !== null) {
                 if((currentTurn ? testArray[newRow][newCol] === "q" : testArray[newRow][newCol] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow][newCol] === "r" : testArray[newRow][newCol] === "R"))){
                   return false;
                 }
                 break;
               } 
+              if (newRow >= 0 && newRow < testArray.length){
+                // PORTAL
+                if(newCol > 3 && colIdx === 0){
+                  for(let j = 0; j <= 3; j++){
+                    if(newRow > 7 || newRow < 0){
+                      break;
+                    }
+                    if (testArray[newRow][0+j] !== null) {
+                      if(checkForRooks){
+                        if(currentTurn ? testArray[newRow][0+j] === "r" : testArray[newRow][0+j] === "R"){
+                          return false;
+                        }
+                      }
+                      if((currentTurn ? testArray[newRow][0+j] === "q" : testArray[newRow][0+j] === "Q")){
+                        return false;
+                      }else{
+                        break;
+                      }
+                    } 
+                    continue;
+                  }
+                }else if (newCol < 0 && colIdx === 3){
+                  for(let j = 0; j <= 3; j++){
+                    if(newRow > 7 || newRow < 0){
+                      break;
+                    }
+                    console.log(`${j} ${newRow} ${3-j} (${newRow})`)
+                    if (testArray[newRow][3-j] !== null) {
+                      if(checkForRooks){
+                        if(currentTurn ? testArray[newRow][3-j] === "r" : testArray[newRow][3-j] === "R"){
+                          return false;
+                        }
+                      }
+                      if((currentTurn ? testArray[newRow][3-j] === "q" : testArray[newRow][3-j] === "Q")){
+                        return false;
+                      }else{
+                        break;
+                      }
+                    } 
+                    continue;
+                  }
+                }
               else{
                 continue;
               }
-            }
-            else if (newRow >= 0 && newRow < testArray.length){
-              // PORTAL
-              if(newCol > 3){
-                for(let j = 0; j <= 3; j++){
-                  if(newRow+j*rowModifier > 7 || newRow+j*rowModifier < 0){
-                    break;
-                  }
-                  if (testArray[newRow+j*rowModifier][0+j] !== null) {
-                    if(checkForRooks){
-                      if(currentTurn ? testArray[newRow][0+j] === "r" : testArray[newRow][0+j] === "R"){
-                        console.log(`${testArray[newRow][0+j]}`);
-                        return false;
-                      }
-                    }
-                    if((currentTurn ? testArray[newRow+j*rowModifier][0+j] === "q" : testArray[newRow+j*rowModifier][0+j] === "Q")){
-                      console.log(`${newRow} ${newCol}. ${newRow+j*rowModifier} ${0+j}`);
-                      return false;
-                    }else{
-                      break;
-                    }
-                  } 
-                  continue;
-                }
-              }else if (newCol < 0){
-                for(let j = 0; j <= 3; j++){
-                  if(newRow+j*rowModifier > 7 || newRow+j*rowModifier < 0){
-                    break;
-                  }
-                  if (testArray[newRow+j][3-j] !== null) {
-                    if(checkForRooks){
-                      if(currentTurn ? testArray[newRow][3-j] === "r" : testArray[newRow][3-j] === "R"){
-                        console.log("TEST");
-                        return false;
-                      }
-                    }
-                    if((currentTurn ? testArray[newRow+j*rowModifier][3-j] === "q" : testArray[newRow+j*rowModifier][3-j] === "Q")){
-                      console.log("TEST");
-                      return false;
-                    }else{
-                      break;
-                    }
-                  } 
-                  continue;
-                }
-              }
-              
             }else{
               break;
             }
@@ -329,7 +324,6 @@ const ChessBoard = () => {
           }
           return true;
         }
-
         if (!CheckIfInBoundries(rowIdx + 2, colIdx + 1)) return false;
         if (!CheckIfInBoundries(rowIdx + 2, colIdx - 1)) return false;
 

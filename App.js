@@ -247,54 +247,35 @@ const ChessBoard = () => {
             // Check boundary conditions for both rows and columns
             console.log(`${newRow} ${newCol}`)
             if (newRow >= 0 && newRow < testArray.length && newCol >= 0 && newCol <= 3) {
+              if(newCol === 3 && colModifier === 1){
+                for(let j = 0; j < 4; j++){
+                  if(newRow + (1 + j) * rowModifier > 7 || newRow + (1 + j) * rowModifier < 0){break;}
+                  if (testArray[newRow + (1 + j) * rowModifier][j] !== null) {
+                    if((currentTurn ? testArray[newRow + (1 + j) * rowModifier][j] === "q" : testArray[newRow + (1 + j) * rowModifier][j] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow + (1 + j) * rowModifier][j] === "r" : testArray[newRow + (1 + j) * rowModifier][j] === "R"))){
+                      return false;
+                    }
+                    break;
+                  }
+                }
+                continue;
+              }else if(newCol === 0 && colModifier === -1){
+                for(let j = 0; j < 4; j++){
+                  if(newRow + (1 + j) * rowModifier > 7 || newRow + (1 + j) * rowModifier < 0){break;}
+                  if (testArray[newRow + (1 + j) * rowModifier][3-j] !== null) {
+                    if((currentTurn ? testArray[newRow + (1 + j) * rowModifier][3-j] === "q" : testArray[newRow + (1 + j) * rowModifier][3-j] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow + (1 + j) * rowModifier][3-j] === "r" : testArray[newRow + (1 + j) * rowModifier][3-j] === "R"))){
+                      return false;
+                    }
+                    break;
+                  }
+                }
+                continue;
+              }
               if (testArray[newRow][newCol] !== null) {
                 if((currentTurn ? testArray[newRow][newCol] === "q" : testArray[newRow][newCol] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow][newCol] === "r" : testArray[newRow][newCol] === "R"))){
                   return false;
                 }
                 break;
               } 
-              if (newRow >= 0 && newRow < testArray.length){
-                // PORTAL
-                if(newCol > 3 && colIdx === 0){
-                  for(let j = 0; j <= 3; j++){
-                    if(newRow > 7 || newRow < 0){
-                      break;
-                    }
-                    if (testArray[newRow][0+j] !== null) {
-                      if(checkForRooks){
-                        if(currentTurn ? testArray[newRow][0+j] === "r" : testArray[newRow][0+j] === "R"){
-                          return false;
-                        }
-                      }
-                      if((currentTurn ? testArray[newRow][0+j] === "q" : testArray[newRow][0+j] === "Q")){
-                        return false;
-                      }else{
-                        break;
-                      }
-                    } 
-                    continue;
-                  }
-                }else if (newCol < 0 && colIdx === 3){
-                  for(let j = 0; j <= 3; j++){
-                    if(newRow > 7 || newRow < 0){
-                      break;
-                    }
-                    console.log(`${j} ${newRow} ${3-j} (${newRow})`)
-                    if (testArray[newRow][3-j] !== null) {
-                      if(checkForRooks){
-                        if(currentTurn ? testArray[newRow][3-j] === "r" : testArray[newRow][3-j] === "R"){
-                          return false;
-                        }
-                      }
-                      if((currentTurn ? testArray[newRow][3-j] === "q" : testArray[newRow][3-j] === "Q")){
-                        return false;
-                      }else{
-                        break;
-                      }
-                    } 
-                    continue;
-                  }
-                }
               else{
                 continue;
               }

@@ -306,7 +306,6 @@ const ChessBoard = () => {
               }
             }
             for(let i = 0; i < 4; i++){
-              console.log(`PORTAL: ${rowIdx+2+i} ${3-i} ${[rowIdx+2+i][3-i]}`)
               if(rowIdx+2+i > 7){break;}
               
               if(testArray[rowIdx+2+i][3-i] !== null){

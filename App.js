@@ -275,7 +275,7 @@ const ChessBoard = () => {
               }
             }
             for(let i = 0; i < 7; i++){
-              if(rowIdx+1+i > 7){break;}
+              if(rowIdx+1+i > 7 || i > 3){break;}
               if(testArray[rowIdx+1+i][i] !== null){
                 
                 if(currentTurn ? testArray[rowIdx+1+i][i] === "q" : testArray[rowIdx+1+i][i] === "Q"){
@@ -285,7 +285,7 @@ const ChessBoard = () => {
               }
             }
             for(let i = 0; i < 7; i++){
-              if(rowIdx-1-i < 0){break;}
+              if(rowIdx-1-i < 0 || i > 3){break;}
               if(testArray[rowIdx+1+i][i] !== null){
                 
                 if(currentTurn ? testArray[rowIdx-1-i][i] === "q" : testArray[rowIdx-1-i][i] === "Q"){
@@ -305,18 +305,17 @@ const ChessBoard = () => {
                 break;
               }
             }
-            for(let i = 0; i < 4; i++){
-              if(rowIdx+2+i > 7){break;}
-              
-              if(testArray[rowIdx+2+i][3-i] !== null){
-                if(currentTurn ? testArray[rowIdx+2+i][3-i] === "q" : testArray[rowIdx+2+i][3-i] === "Q"){
+            for(let i = 0; i < 6; i++){
+              if(rowIdx+1+i > 7 || 3-i < 0){break;}
+              if(testArray[rowIdx+1+i][3-i] !== null){
+                if(currentTurn ? testArray[rowIdx+1+i][3-i] === "q" : testArray[rowIdx+1+i][3-i] === "Q"){
                   return false;
                 }
                 break;
               }
             }
-            for(let i = 0; i < 4; i++){
-              if(rowIdx-1-i < 0){break;}
+            for(let i = 0; i < 6; i++){
+              if(rowIdx-1-i < 0 || 3-i < 0){break;}
               
               if(testArray[rowIdx+1+i][3-i] !== null){
                 if(currentTurn ? testArray[rowIdx-1-i][3-i] === "q" : testArray[rowIdx-1-i][3-i] === "Q"){

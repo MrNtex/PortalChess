@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect  } from 'react';
 import { useState, memo } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import * as NavigationBar from 'expo-navigation-bar';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 
 export default function App() {
+  
   return (
     <View style={styles.container}>
       <ChessBoard />
@@ -38,13 +40,16 @@ const ChessBoard = () => {
 
   //TURN True = White, False = Black
   const [currentTurn, setCurrentTurn] = useState(true);
-
+  const hideNavigationBar = async () => {
+    // Setting the visibility status of the Navigation Bar to "hidden".
+    await NavigationBar.setVisibilityAsync("hidden");
+  };
 
   const handlePress = (row, col) => {
+    hideNavigationBar();
     if(col >= 0 && col <= 4 && row >= 1 && row <= 8){
       SelectPiece(row, col)
     }
-    
   };
   const [selectedPiece, setSelectedPiece] = useState({
     row: 0,
@@ -623,7 +628,7 @@ const ChessBoard = () => {
   return (
     
     <View>
-      {currentTurn ? <Text>White's turn</Text>: <Text>Black's turn</Text> }
+      {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
       <View style={styles.boardContainer}>
       {Array.from({ length: 10 }).map((_, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
@@ -656,7 +661,7 @@ const ChessBoard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#121212',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -708,6 +713,13 @@ const styles = StyleSheet.create({
     fontSize: 36,
     textAlign: 'center',
     top: 8,
+  },
+
+  roundText: {
+    color: 'white',
+    fontSize: 21,
+    textAlign: 'center',
+    fontWeight: 'bold'
   }
 });
 

@@ -115,11 +115,23 @@ const ChessBoard = () => {
     }
     return false;
   };
-  const RenderCapturedBlackPiecesText = memo(({ pieces }) => {
-    return <Text style={styles.roundText}>{pieces}</Text>;
-  });
-  const RenderCapturedWhitePiecesText = memo(({ pieces }) => {
-    return <Text style={styles.roundText}>{pieces}</Text>;
+  const CountPieces = (pieces) => {
+    let points = 0;
+    for (let i = 0; i<pieces.length; i++){
+      if(pieces[i] == "p" || pieces[i] == "P"){
+        points++;
+      }else if(pieces[i] == "n" || pieces[i] == "N" || pieces[i] == "r" || pieces[i] == "R"){
+        points += 3;
+      }else if(pieces[i] == "q" || pieces[i] == "Q"){
+        points += 9;
+      }
+    }
+    return points;
+  }
+  const RenderCapturedPiecesText = memo(({ pieces }) => {
+    return (<Text style={styles.capturedPiece}>
+      <Text style={styles.countColor}>{CountPieces(pieces)}:</Text> {pieces.join(", ")}
+    </Text>);
   });
   const RenderText = ( rowIndex, colIndex) => {
     return useMemo(() => {
@@ -653,8 +665,9 @@ const ChessBoard = () => {
     
     
     <View>
-      <RenderCapturedBlackPiecesText pieces={blackPiecesCaptured.join(", ")} />
+      
       {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+      <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
       <View style={styles.boardContainer}>
       {Array.from({ length: 10 }).map((_, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
@@ -679,7 +692,7 @@ const ChessBoard = () => {
         </View>
       ))}
     </View>
-    <RenderCapturedWhitePiecesText pieces={whitePiecesCaptured.join(", ")} />
+    <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
     </View>
     
   );
@@ -747,6 +760,17 @@ const styles = StyleSheet.create({
     fontSize: 21,
     textAlign: 'center',
     fontWeight: 'bold'
+  },
+
+  capturedPiece: {
+    top:4,
+    color: '#9c9c9c',
+    fontSize: 21,
+    textAlign: 'center',
+    fontWeight: 'bold'
+  },
+  countColor: {
+    color: '#f7f7f7'
   }
 });
 

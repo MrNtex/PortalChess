@@ -87,7 +87,12 @@ const ChessBoard = () => {
     ['p', 'p', 'p', 'p'],
     ['n', 'q', 'k', 'r'],
   ]);
-
+  const [blackPiecesCaptured, setBlackPiecesCaptured] = useState([
+    [],
+  ]);
+  const [whitePiecesCaptured, setWhitePiecesCaptured] = useState([
+    [],
+  ]);
   const [king, setKing] = useState({
     whiteKingRow: 0,
     whiteKingCol: 2,
@@ -110,7 +115,9 @@ const ChessBoard = () => {
     }
     return false;
   };
-  
+  const RenderCapturedBlackPiecesText = memo(({ pieces }) => {
+    return <Text style={styles.roundText}>{pieces}</Text>;
+  });
   const RenderText = ( rowIndex, colIndex) => {
     return useMemo(() => {
         if (colIndex === 0 && rowIndex > 0 && rowIndex < 9) {
@@ -168,8 +175,22 @@ const ChessBoard = () => {
           blackKingCol: colIndex,
         }));
       }
+      const capturedPiece = currentChessBoard[rowIndex-1][colIndex];
+      if(currentChessBoard[rowIndex-1][colIndex] != null){
+        if(currentTurn){
+          setBlackPiecesCaptured(prevState => {
+            const newState = [...prevState[0], capturedPiece];
+            return [newState];
+          });
+        }else{
+          setWhitePiecesCaptured(prevState => {
+            const newState = [...prevState[0], capturedPiece];
+            return [newState];
+          });
+        }
+      }
+      
       setCurrentTurn(prevState => !prevState);
-
       setChessBoard(prevState => {
           let newState = [...prevState];          
           newState[selectedPiece.row-1][selectedPiece.col] = null;
@@ -291,7 +312,7 @@ const ChessBoard = () => {
             }
             for(let i = 0; i < 7; i++){
               if(rowIdx-1-i < 0 || i > 3){break;}
-              if(testArray[rowIdx+1+i][i] !== null){
+              if(testArray[rowIdx-1-i][i] !== null){
                 
                 if(currentTurn ? testArray[rowIdx-1-i][i] === "q" : testArray[rowIdx-1-i][i] === "Q"){
                   return false;
@@ -322,7 +343,7 @@ const ChessBoard = () => {
             for(let i = 0; i < 6; i++){
               if(rowIdx-1-i < 0 || 3-i < 0){break;}
               
-              if(testArray[rowIdx+1+i][3-i] !== null){
+              if(testArray[rowIdx-1-i][3-i] !== null){
                 if(currentTurn ? testArray[rowIdx-1-i][3-i] === "q" : testArray[rowIdx-1-i][3-i] === "Q"){
                   return false;
                 }
@@ -653,6 +674,7 @@ const ChessBoard = () => {
         </View>
       ))}
     </View>
+    <RenderCapturedBlackPiecesText pieces={blackPiecesCaptured.join(", ")} />
     </View>
     
   );

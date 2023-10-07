@@ -118,6 +118,9 @@ const ChessBoard = () => {
   const RenderCapturedBlackPiecesText = memo(({ pieces }) => {
     return <Text style={styles.roundText}>{pieces}</Text>;
   });
+  const RenderCapturedWhitePiecesText = memo(({ pieces }) => {
+    return <Text style={styles.roundText}>{pieces}</Text>;
+  });
   const RenderText = ( rowIndex, colIndex) => {
     return useMemo(() => {
         if (colIndex === 0 && rowIndex > 0 && rowIndex < 9) {
@@ -648,7 +651,9 @@ const ChessBoard = () => {
   }
   return (
     
+    
     <View>
+      <RenderCapturedBlackPiecesText pieces={blackPiecesCaptured.join(", ")} />
       {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
       <View style={styles.boardContainer}>
       {Array.from({ length: 10 }).map((_, rowIndex) => (
@@ -674,7 +679,7 @@ const ChessBoard = () => {
         </View>
       ))}
     </View>
-    <RenderCapturedBlackPiecesText pieces={blackPiecesCaptured.join(", ")} />
+    <RenderCapturedWhitePiecesText pieces={whitePiecesCaptured.join(", ")} />
     </View>
     
   );

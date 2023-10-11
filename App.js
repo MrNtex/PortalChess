@@ -100,6 +100,39 @@ const ChessBoard = () => {
     blackKingCol: 2,
   });
 
+  const CheckChessBoard = (turn) => {
+    
+    if(turn){
+      // White Pieces
+      for(let i = 0; i < currentChessBoard.length; i++){
+        for(let j = 0; j < currentChessBoard[i].length; j++){
+          
+          if(currentChessBoard[i][j] !== null && currentChessBoard[i][j] == currentChessBoard[i][j].toUpperCase()){
+            console.log(`${currentChessBoard[i][j]}: ${SelectPiece(i+1,j,true)}`);
+            if(SelectPiece(i+1,j,true)){
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }else{
+      // Black Pieces
+      for(let i = 0; i < currentChessBoard.length; i++){
+        for(let j = 0; j < currentChessBoard[i].length; j++){
+          
+          if(currentChessBoard[i][j] !== null && currentChessBoard[i][j] == currentChessBoard[i][j].toLowerCase()){
+            console.log(`${currentChessBoard[i][j]}: ${SelectPiece(i+1,j,true)}`);
+            if(SelectPiece(i+1,j,true)){
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+  }
+
   const CheckForEnemyPiece = (rowIndex, colIndex, white) => {
     if(currentChessBoard[rowIndex][colIndex] == null){
       return false;
@@ -169,9 +202,9 @@ const ChessBoard = () => {
     return null;
   };
   
-  const SelectPiece = (rowIndex,colIndex) => {
+  const SelectPiece = (rowIndex,colIndex, testForStalemate = false) => {
     
-    if(highLightsArray[rowIndex-1][colIndex]){
+    if(highLightsArray[rowIndex-1][colIndex] && !testForStalemate){
 
       // MOVE PIECE
       if(selectedPiece.rowIndex == rowIndex && selectedPiece.colIndex == colIndex){
@@ -204,7 +237,7 @@ const ChessBoard = () => {
           });
         }
       }
-      
+      let newTurn = !currentTurn;
       setCurrentTurn(prevState => !prevState);
       setChessBoard(prevState => {
           let newState = [...prevState];          
@@ -214,11 +247,18 @@ const ChessBoard = () => {
           return newState;
       });
       setHighLights(DEFAULT_HIGHLIGHTS);
+
+      if(!CheckChessBoard(newTurn)){
+        console.log("Stale/Checkmate");
+      }
+      
+
+      //Check for stalemate / chackmate
   
     } else if(currentChessBoard[rowIndex-1][colIndex]){
 
       // SELECT PIECE
-
+      
       let chessPieceSelected = currentChessBoard[rowIndex-1][colIndex];
         
       //setHighLights(DEFAULT_HIGHLIGHTS);
@@ -228,11 +268,10 @@ const ChessBoard = () => {
           type: chessPieceSelected,
       });
       
-      if((chessPieceSelected == chessPieceSelected.toUpperCase()) != currentTurn){
+      if(!testForStalemate && (chessPieceSelected == chessPieceSelected.toUpperCase()) != currentTurn){
         setHighLights(DEFAULT_HIGHLIGHTS);
         return newState;
       }
-
       let pieceColorWhite = (chessPieceSelected == chessPieceSelected.toUpperCase()) ? true : false;
       
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
@@ -242,9 +281,8 @@ const ChessBoard = () => {
         blackKingRow: king.blackKingRow, 
         blackKingCol: king.blackKingCol 
       };
-      function CheckMoves(state, boardCopy, lastPiece){
+      function CheckMoves(state, boardCopy, lastPiece, returnMove = false){
         let highlightsState = state;
-        
         for(let i = 0; i < state.length; i++){
           for(let j = 0; j < state[i].length; j++){
             if(state[i][j]){
@@ -268,12 +306,18 @@ const ChessBoard = () => {
               }
               else{
                 highlightsState[i][j] = true;
+                if(returnMove){
+                  return true;
+                }
               }
               
               //setCurrentTurn(prevTurn => !prevTurn);
               
             }
           }
+        }
+        if(returnMove){
+          return false;
         }
         return highlightsState;
       }
@@ -481,182 +525,201 @@ const ChessBoard = () => {
         }
       }
 
+      let colIndexDiag;
       switch(chessPieceSelected){
           case "P":
             // White pawns move one or two squares, or attack piece diagonally
-            setHighLights((prevState) => {
-              
-
-                let colIndexDiag = colIndex - 1;
-                if(CheckForEnemyPiece(rowIndex,colIndexDiag < 0 ? 3 : colIndexDiag,pieceColorWhite)) 
-                {
-                    newState[rowIndex][colIndexDiag < 0 ? 3 : colIndexDiag] = true;
-                }
-                colIndexDiag += 2;
-                if(CheckForEnemyPiece(rowIndex,colIndexDiag > 3 ? 0 : colIndexDiag,pieceColorWhite)) 
-                {
-                    newState[rowIndex][colIndexDiag > 3 ? 0 : colIndexDiag] = true;
+            colIndexDiag = colIndex - 1;
+            if(CheckForEnemyPiece(rowIndex,colIndexDiag < 0 ? 3 : colIndexDiag,pieceColorWhite)) 
+            {
+                newState[rowIndex][colIndexDiag < 0 ? 3 : colIndexDiag] = true;
+            }
+            colIndexDiag += 2;
+            if(CheckForEnemyPiece(rowIndex,colIndexDiag > 3 ? 0 : colIndexDiag,pieceColorWhite)) 
+            {
+                newState[rowIndex][colIndexDiag > 3 ? 0 : colIndexDiag] = true;
+            }
+            
+            // Normal movement
+            if (rowIndex === 2) {
+                for (let i = 1; i <= 2; i++) {
+                    if (currentChessBoard[rowIndex - 1 + i][colIndex] !== null) {
+                        break;
+                    }
+                    newState[rowIndex - 1 + i] = [...newState[rowIndex - 1 + i]];
+                    newState[rowIndex - 1 + i][colIndex] = true;
                 }
                 
-                // Normal movement
-                if (rowIndex === 2) {
-                    for (let i = 1; i <= 2; i++) {
-                        if (currentChessBoard[rowIndex - 1 + i][colIndex] !== null) {
-                            break;
-                        }
-                        newState[rowIndex - 1 + i] = [...newState[rowIndex - 1 + i]];
-                        newState[rowIndex - 1 + i][colIndex] = true;
-                    }
-                    
-                } else {
-                    if (currentChessBoard[rowIndex][colIndex] === null) {
-                        newState[rowIndex] = [...newState[rowIndex]];
-                        newState[rowIndex][colIndex] = true;
-                    }
+            } else {
+                if (currentChessBoard[rowIndex][colIndex] === null) {
+                    newState[rowIndex] = [...newState[rowIndex]];
+                    newState[rowIndex][colIndex] = true;
                 }
+            }
+            if(!testForStalemate){
+              setHighLights((prevState) => {
                 return CheckMoves(newState, currentChessBoard, chessPieceSelected);
-            });
+              });
+            }else{
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected, true);
+            }
+            
             break;
           case "p":
             // Black pawns move one or two squares, or attack piece diagonally
-            setHighLights((prevState) => {
-                
-
-              let colIndexDiag = colIndex - 1;
-              if(CheckForEnemyPiece(rowIndex-2,colIndexDiag < 0 ? 3 : colIndexDiag,pieceColorWhite)) 
-              {
-                  newState[rowIndex-2][colIndexDiag < 0 ? 3 : colIndexDiag] = true;
-              }
-              colIndexDiag += 2;
-              if(CheckForEnemyPiece(rowIndex-2,colIndexDiag > 3 ? 0 : colIndexDiag,pieceColorWhite)) 
-              {
-                  newState[rowIndex-2][colIndexDiag > 3 ? 0 : colIndexDiag] = true;
-              }
+            colIndexDiag = colIndex - 1;
+            if(CheckForEnemyPiece(rowIndex-2,colIndexDiag < 0 ? 3 : colIndexDiag,pieceColorWhite)) 
+            {
+                newState[rowIndex-2][colIndexDiag < 0 ? 3 : colIndexDiag] = true;
+            }
+            colIndexDiag += 2;
+            if(CheckForEnemyPiece(rowIndex-2,colIndexDiag > 3 ? 0 : colIndexDiag,pieceColorWhite)) 
+            {
+                newState[rowIndex-2][colIndexDiag > 3 ? 0 : colIndexDiag] = true;
+            }
+          
             
-              
-              // Normal movement
-              if (rowIndex === 7) {
-                  for (let i = 1; i <= 2; i++) {
-                      if (currentChessBoard[rowIndex - 1 - i][colIndex] !== null) {
-                          break;
-                      }
-                      newState[rowIndex - 1 - i] = [...newState[rowIndex - 1 - i]];
-                      newState[rowIndex - 1 - i][colIndex] = true;
-                  }
-                  
-              } else {
-                  if (currentChessBoard[rowIndex-2][colIndex] === null) {
-                      newState[rowIndex-2] = [...newState[rowIndex-2]];
-                      newState[rowIndex-2][colIndex] = true;
-                  }
-              }
-              
-              return CheckMoves(newState, currentChessBoard, chessPieceSelected);
-            });
+            // Normal movement
+            if (rowIndex === 7) {
+                for (let i = 1; i <= 2; i++) {
+                    if (currentChessBoard[rowIndex - 1 - i][colIndex] !== null) {
+                        break;
+                    }
+                    newState[rowIndex - 1 - i] = [...newState[rowIndex - 1 - i]];
+                    newState[rowIndex - 1 - i][colIndex] = true;
+                }
+                
+            } else {
+                if (currentChessBoard[rowIndex-2][colIndex] === null) {
+                    newState[rowIndex-2] = [...newState[rowIndex-2]];
+                    newState[rowIndex-2][colIndex] = true;
+                }
+            }
+            if(!testForStalemate){
+              setHighLights((prevState) => {
+                return CheckMoves(newState, currentChessBoard, chessPieceSelected);
+              });
+            }else{
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected, true);
+            }
             break;
           case "r":
           case "R":
             // Rook moves in cardinal directions
-            setHighLights((prevState) => {
-              // top movement
-              updateStateForDirection(1, 0, 7);
-              // down movement
-              updateStateForDirection(-1, 0, 7);
-              // right movement
-              updateStateForDirection(0, 1, 4);
-              // left movement
-              updateStateForDirection(0, -1, 4);
-              return CheckMoves(newState, currentChessBoard, chessPieceSelected);
-            });
+            // top movement
+            updateStateForDirection(1, 0, 7);
+            // down movement
+            updateStateForDirection(-1, 0, 7);
+            // right movement
+            updateStateForDirection(0, 1, 4);
+            // left movement
+            updateStateForDirection(0, -1, 4);
+            if(!testForStalemate){
+              setHighLights((prevState) => {
+                return CheckMoves(newState, currentChessBoard, chessPieceSelected);
+              });
+            }else{
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected, true);
+            }
             break;
           case "q":
           case "Q":
             // Queen moves both in cardinal directions and diagonally
-            setHighLights((prevState) => {
-               
-              // top movement
-              updateStateForDirection(1, 0, 7);
-              // down movement
-              updateStateForDirection(-1, 0, 7);
-              // right movement
-              updateStateForDirection(0, 1, 4);
-              // left movement
-              updateStateForDirection(0, -1, 4);
+            // top movement
+            updateStateForDirection(1, 0, 7);
+            // down movement
+            updateStateForDirection(-1, 0, 7);
+            // right movement
+            updateStateForDirection(0, 1, 4);
+            // left movement
+            updateStateForDirection(0, -1, 4);
 
-              //right-top movement
-              updateStateForDirection(1, 1, 7);
-              //right-down movement
-              updateStateForDirection(1, -1, 7);
-              //left-top movement
-              updateStateForDirection(-1, 1, 4);
-              //right-down movement
-              updateStateForDirection(-1, -1, 4);
-              return CheckMoves(newState, currentChessBoard, chessPieceSelected);
-            });
+            //right-top movement
+            updateStateForDirection(1, 1, 7);
+            //right-down movement
+            updateStateForDirection(1, -1, 7);
+            //left-top movement
+            updateStateForDirection(-1, 1, 4);
+            //right-down movement
+            updateStateForDirection(-1, -1, 4);
+            if(!testForStalemate){
+              setHighLights((prevState) => {
+                return CheckMoves(newState, currentChessBoard, chessPieceSelected);
+              });
+            }else{
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected, true);
+            }
             break;
           case "n":
           case "N":
-            setHighLights((prevState) => {
-              function CheckIfInBoundries(desiredRow, desiredCol){
-                if(desiredRow > 7 || desiredRow < 0){
-                  return;
-                }
-                if(desiredCol < 0 || desiredCol > 3){
-                  if(currentChessBoard[desiredRow][desiredCol < 0 ? 3 : 0] !== null){
-                    if(!CheckForEnemyPiece(desiredRow,desiredCol,pieceColorWhite)){
-                      return;
-                    }
-                  }
-                  newState[desiredRow][desiredCol < 0 ? 3 : 0] = true;
-                }
-                if(currentChessBoard[desiredRow][desiredCol] !== null){
-                  if(CheckForEnemyPiece(desiredRow,desiredCol,pieceColorWhite)){
-                    newState[desiredRow][desiredCol] = true;
-                  }
-                  return;
-                }
-                newState[desiredRow][desiredCol] = true;
+            function CheckIfInBoundries(desiredRow, desiredCol){
+              if(desiredRow > 7 || desiredRow < 0){
+                return;
               }
+              if(desiredCol < 0 || desiredCol > 3){
+                if(currentChessBoard[desiredRow][desiredCol < 0 ? 3 : 0] !== null){
+                  if(!CheckForEnemyPiece(desiredRow,desiredCol,pieceColorWhite)){
+                    return;
+                  }
+                }
+                newState[desiredRow][desiredCol < 0 ? 3 : 0] = true;
+              }
+              if(currentChessBoard[desiredRow][desiredCol] !== null){
+                if(CheckForEnemyPiece(desiredRow,desiredCol,pieceColorWhite)){
+                  newState[desiredRow][desiredCol] = true;
+                }
+                return;
+              }
+              newState[desiredRow][desiredCol] = true;
+            }
 
-              CheckIfInBoundries(rowIndex - 1 + 2, colIndex + 1);
-              CheckIfInBoundries(rowIndex - 1 + 2, colIndex - 1);
+            CheckIfInBoundries(rowIndex - 1 + 2, colIndex + 1);
+            CheckIfInBoundries(rowIndex - 1 + 2, colIndex - 1);
 
-              CheckIfInBoundries(rowIndex - 1 - 2, colIndex + 1);
-              CheckIfInBoundries(rowIndex - 1 - 2, colIndex - 1);
+            CheckIfInBoundries(rowIndex - 1 - 2, colIndex + 1);
+            CheckIfInBoundries(rowIndex - 1 - 2, colIndex - 1);
 
-              CheckIfInBoundries(rowIndex - 1 + 1, colIndex + 2);
-              CheckIfInBoundries(rowIndex - 1 - 1, colIndex + 2);
+            CheckIfInBoundries(rowIndex - 1 + 1, colIndex + 2);
+            CheckIfInBoundries(rowIndex - 1 - 1, colIndex + 2);
 
-              CheckIfInBoundries(rowIndex - 1 + 1, colIndex - 2);
-              CheckIfInBoundries(rowIndex - 1 - 1, colIndex - 2);
+            CheckIfInBoundries(rowIndex - 1 + 1, colIndex - 2);
+            CheckIfInBoundries(rowIndex - 1 - 1, colIndex - 2);
 
-              return CheckMoves(newState, currentChessBoard, chessPieceSelected);
-          });
+            if(!testForStalemate){
+              setHighLights((prevState) => {
+                return CheckMoves(newState, currentChessBoard, chessPieceSelected);
+              });
+            }else{
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected, true);
+            }
           break;
           case "k":
           case "K":
-            // Queen moves both in cardinal directions and diagonally
-            setHighLights((prevState) => {
-               
-              // top movement
-              updateStateForDirection(1, 0, 1);
-              // down movement
-              updateStateForDirection(-1, 0, 1);
-              // right movement
-              updateStateForDirection(0, 1, 1);
-              // left movement
-              updateStateForDirection(0, -1, 1);
+            
+            // top movement
+            updateStateForDirection(1, 0, 1);
+            // down movement
+            updateStateForDirection(-1, 0, 1);
+            // right movement
+            updateStateForDirection(0, 1, 1);
+            // left movement
+            updateStateForDirection(0, -1, 1);
 
-              //right-top movement
-              updateStateForDirection(1, 1, 1);
-              //right-down movement
-              updateStateForDirection(1, -1, 1);
-              //left-top movement
-              updateStateForDirection(-1, 1, 1);
-              //right-down movement
-              updateStateForDirection(-1, -1, 1);
-              return CheckMoves(newState, currentChessBoard, chessPieceSelected);
-            });
+            //right-top movement
+            updateStateForDirection(1, 1, 1);
+            //right-down movement
+            updateStateForDirection(1, -1, 1);
+            //left-top movement
+            updateStateForDirection(-1, 1, 1);
+            //right-down movement
+            updateStateForDirection(-1, -1, 1);
+            if(!testForStalemate){
+              setHighLights((prevState) => {
+                return CheckMoves(newState, currentChessBoard, chessPieceSelected);
+              });
+            }else{
+              return CheckMoves(newState, currentChessBoard, chessPieceSelected, true);
+            }
             break;
       } 
     }

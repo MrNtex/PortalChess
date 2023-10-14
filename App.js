@@ -214,7 +214,6 @@ const ChessBoard = () => {
   
   const SelectPiece = (rowIndex,colIndex, testForStalemate = false, testForCheckmate = false) => {
     if(testForCheckmate){
-      
       if(CheckForLegality(currentChessBoard)){
         return true;
       }
@@ -290,6 +289,12 @@ const ChessBoard = () => {
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
       
       function CheckMoves(state, boardCopy, lastPiece, returnMove = false){
+        let tempKing = { 
+          whiteKingRow: king.whiteKingRow, 
+          whiteKingCol: king.whiteKingCol, 
+          blackKingRow: king.blackKingRow, 
+          blackKingCol: king.blackKingCol 
+        };
         let highlightsState = state;
         for(let i = 0; i < state.length; i++){
           for(let j = 0; j < state[i].length; j++){
@@ -330,14 +335,12 @@ const ChessBoard = () => {
         return highlightsState;
       }
       function CheckForLegality(testArray, kingM){
-        if(tempKing === null){
-          let tempKing = { 
-            whiteKingRow: king.whiteKingRow, 
-            whiteKingCol: king.whiteKingCol, 
-            blackKingRow: king.blackKingRow, 
-            blackKingCol: king.blackKingCol 
-          };
-        }
+        let tempKing = { 
+          whiteKingRow: king.whiteKingRow, 
+          whiteKingCol: king.whiteKingCol, 
+          blackKingRow: king.blackKingRow, 
+          blackKingCol: king.blackKingCol 
+        };
         let rowIdx = currentTurn ? tempKing.whiteKingRow : tempKing.blackKingRow;
         let colIdx = currentTurn ? tempKing.whiteKingCol : tempKing.blackKingCol;
         //First check for diagonals (queen)

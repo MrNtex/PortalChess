@@ -77,6 +77,16 @@ const ChessBoard = () => {
     ['p', 'p', 'p', 'p'],
     ['n', 'q', 'k', 'r'],
   ]);
+  useEffect(() => {
+    console.log("Chess Board Updated!");
+    if (!CheckChessBoard(currentTurn)) {
+      if(SelectPiece(0,0,false,true)){
+        console.log("Checkmate!");
+        return;
+      }
+      console.log("Stalemate");
+    }
+  }, [currentChessBoard, currentTurn]); 
   const [currentChessBoardToTest, setChessBoardToTest] = useState([
     ['N', 'Q', 'K', 'R'],
     ['P', 'P', 'P', 'P'],
@@ -202,8 +212,16 @@ const ChessBoard = () => {
     return null;
   };
   
-  const SelectPiece = (rowIndex,colIndex, testForStalemate = false) => {
-    
+  const SelectPiece = (rowIndex,colIndex, testForStalemate = false, testForCheckmate = false) => {
+    if(testForCheckmate){
+      
+      if(CheckForLegality(currentChessBoard)){
+        return true;
+      }
+      else{
+        return false;
+      }
+    }
     if(highLightsArray[rowIndex-1][colIndex] && !testForStalemate){
 
       // MOVE PIECE
@@ -248,11 +266,6 @@ const ChessBoard = () => {
       });
       setHighLights(DEFAULT_HIGHLIGHTS);
 
-      if(!CheckChessBoard(newTurn)){
-        console.log("Stale/Checkmate");
-      }
-      
-
       //Check for stalemate / chackmate
   
     } else if(currentChessBoard[rowIndex-1][colIndex]){
@@ -275,12 +288,7 @@ const ChessBoard = () => {
       let pieceColorWhite = (chessPieceSelected == chessPieceSelected.toUpperCase()) ? true : false;
       
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
-      let tempKing = { 
-        whiteKingRow: king.whiteKingRow, 
-        whiteKingCol: king.whiteKingCol, 
-        blackKingRow: king.blackKingRow, 
-        blackKingCol: king.blackKingCol 
-      };
+      
       function CheckMoves(state, boardCopy, lastPiece, returnMove = false){
         let highlightsState = state;
         for(let i = 0; i < state.length; i++){
@@ -322,6 +330,14 @@ const ChessBoard = () => {
         return highlightsState;
       }
       function CheckForLegality(testArray, kingM){
+        if(tempKing === null){
+          let tempKing = { 
+            whiteKingRow: king.whiteKingRow, 
+            whiteKingCol: king.whiteKingCol, 
+            blackKingRow: king.blackKingRow, 
+            blackKingCol: king.blackKingCol 
+          };
+        }
         let rowIdx = currentTurn ? tempKing.whiteKingRow : tempKing.blackKingRow;
         let colIdx = currentTurn ? tempKing.whiteKingCol : tempKing.blackKingCol;
         //First check for diagonals (queen)

@@ -83,8 +83,9 @@ const ChessBoard = () => {
       if(SelectPiece(0,0,false,true)){
         console.log("Checkmate!");
         return;
+      }else{
+        console.log("Stalemate");
       }
-      console.log("Stalemate");
     }
   }, [currentChessBoard, currentTurn]); 
   const [currentChessBoardToTest, setChessBoardToTest] = useState([
@@ -213,7 +214,14 @@ const ChessBoard = () => {
   };
   
   const SelectPiece = (rowIndex,colIndex, testForStalemate = false, testForCheckmate = false) => {
-    if(testForCheckmate){
+    
+    let tempKing = { // I use tempKing due to React's asynchronous nature
+      whiteKingRow: king.whiteKingRow, 
+      whiteKingCol: king.whiteKingCol, 
+      blackKingRow: king.blackKingRow, 
+      blackKingCol: king.blackKingCol 
+    };
+    if(!testForCheckmate){
       if(CheckForLegality(currentChessBoard)){
         return true;
       }
@@ -287,14 +295,11 @@ const ChessBoard = () => {
       let pieceColorWhite = (chessPieceSelected == chessPieceSelected.toUpperCase()) ? true : false;
       
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
-      
+
+      console.log(tempKing);
+
       function CheckMoves(state, boardCopy, lastPiece, returnMove = false){
-        let tempKing = { 
-          whiteKingRow: king.whiteKingRow, 
-          whiteKingCol: king.whiteKingCol, 
-          blackKingRow: king.blackKingRow, 
-          blackKingCol: king.blackKingCol 
-        };
+        
         let highlightsState = state;
         for(let i = 0; i < state.length; i++){
           for(let j = 0; j < state[i].length; j++){
@@ -334,13 +339,7 @@ const ChessBoard = () => {
         }
         return highlightsState;
       }
-      function CheckForLegality(testArray, kingM){
-        let tempKing = { 
-          whiteKingRow: king.whiteKingRow, 
-          whiteKingCol: king.whiteKingCol, 
-          blackKingRow: king.blackKingRow, 
-          blackKingCol: king.blackKingCol 
-        };
+      function CheckForLegality(testArray){
         let rowIdx = currentTurn ? tempKing.whiteKingRow : tempKing.blackKingRow;
         let colIdx = currentTurn ? tempKing.whiteKingCol : tempKing.blackKingCol;
         //First check for diagonals (queen)

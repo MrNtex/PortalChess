@@ -80,7 +80,7 @@ const ChessBoard = () => {
   useEffect(() => {
     console.log("Chess Board Updated!");
     if (!CheckChessBoard(currentTurn)) {
-      if(SelectPiece(0,0,false,true)){
+      if(!SelectPiece(0,0,false,true)){
         console.log("Checkmate!");
         return;
       }else{
@@ -221,7 +221,9 @@ const ChessBoard = () => {
       blackKingRow: king.blackKingRow, 
       blackKingCol: king.blackKingCol 
     };
-    if(!testForCheckmate){
+    console.log("TEST");
+    if(!testForStalemate && testForCheckmate){
+      
       if(CheckForLegality(currentChessBoard)){
         return true;
       }
@@ -296,7 +298,7 @@ const ChessBoard = () => {
       
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
 
-      console.log(tempKing);
+      console.log("Test");
 
       function CheckMoves(state, boardCopy, lastPiece, returnMove = false){
         
@@ -854,4 +856,3 @@ const styles = StyleSheet.create({
     color: '#f7f7f7'
   }
 });
-

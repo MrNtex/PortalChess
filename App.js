@@ -77,7 +77,28 @@ const ChessBoard = () => {
     ['p', 'p', 'p', 'p'],
     ['n', 'q', 'k', 'r'],
   ]);
+  //Loop through the board and check if there are any pieces other than kings and knights
+  function TestForStalemate(){
+    for(i = 0; i<8; i++){
+      for(j=0; j<4; j++){
+        if(currentChessBoard[i][j] !== null){
+          if(currentChessBoard[i][j] === "K" || currentChessBoard[i][j] === "k" || currentChessBoard[i][j] === "N" || currentChessBoard[i][j] === "n"){
+            continue;
+          }else{
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
   useEffect(() => {
+    if(whitePiecesCaptured.length >= 6 && blackPiecesCaptured.length >= 6)
+    {
+      if(TestForStalemate){
+        console.log("Stalemate");
+      }
+    } 
     if (!CheckChessBoard(currentTurn)) {
       if(!SelectPiece(0,0,false,true)){
         console.log("Checkmate!");
@@ -269,7 +290,6 @@ const ChessBoard = () => {
       }
       let replacePieceWith = selectedPiece.type;
       // Promotion of pawns
-      console.log(rowIndex);
       if(selectedPiece.type === "P" && rowIndex === 8){
         replacePieceWith = "Q";
       }else if(selectedPiece.type === "p" && rowIndex === 1){

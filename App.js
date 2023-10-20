@@ -78,7 +78,6 @@ const ChessBoard = () => {
     ['n', 'q', 'k', 'r'],
   ]);
   useEffect(() => {
-    console.log("Chess Board Updated!");
     if (!CheckChessBoard(currentTurn)) {
       if(!SelectPiece(0,0,false,true)){
         console.log("Checkmate!");
@@ -98,12 +97,8 @@ const ChessBoard = () => {
     ['p', 'p', 'p', 'p'],
     ['n', 'q', 'k', 'r'],
   ]);
-  const [blackPiecesCaptured, setBlackPiecesCaptured] = useState([
-    [],
-  ]);
-  const [whitePiecesCaptured, setWhitePiecesCaptured] = useState([
-    [],
-  ]);
+  const [blackPiecesCaptured, setBlackPiecesCaptured] = useState([]);
+  const [whitePiecesCaptured, setWhitePiecesCaptured] = useState([]);
   const [king, setKing] = useState({
     whiteKingRow: 0,
     whiteKingCol: 2,
@@ -119,7 +114,6 @@ const ChessBoard = () => {
         for(let j = 0; j < currentChessBoard[i].length; j++){
           
           if(currentChessBoard[i][j] !== null && currentChessBoard[i][j] == currentChessBoard[i][j].toUpperCase()){
-            console.log(`${currentChessBoard[i][j]}: ${SelectPiece(i+1,j,true)}`);
             if(SelectPiece(i+1,j,true)){
               return true;
             }
@@ -133,7 +127,6 @@ const ChessBoard = () => {
         for(let j = 0; j < currentChessBoard[i].length; j++){
           
           if(currentChessBoard[i][j] !== null && currentChessBoard[i][j] == currentChessBoard[i][j].toLowerCase()){
-            console.log(`${currentChessBoard[i][j]}: ${SelectPiece(i+1,j,true)}`);
             if(SelectPiece(i+1,j,true)){
               return true;
             }
@@ -160,21 +153,33 @@ const ChessBoard = () => {
     return false;
   };
   const CountPieces = (pieces) => {
-    let points = 0;
-    for (let i = 0; i<pieces.length; i++){
-      if(pieces[i] == "p" || pieces[i] == "P"){
-        points++;
-      }else if(pieces[i] == "n" || pieces[i] == "N" || pieces[i] == "r" || pieces[i] == "R"){
-        points += 3;
-      }else if(pieces[i] == "q" || pieces[i] == "Q"){
-        points += 9;
+    const points = {
+      p: 1,
+      P: 1,
+      n: 3,
+      N: 3,
+      r: 3,
+      R: 3,
+      q: 9,
+      Q: 9,
+    };
+    let totalPoints = 0;
+    console.log( pieces.length);
+    for (let i = 0; i < pieces.length; i++) {
+      const piece = pieces[i];
+      console.log(piece);
+      if (points[piece]) {
+        totalPoints += points[piece];
+        console.log(totalPoints);
       }
     }
-    return points;
-  }
+    return totalPoints;
+  };
   const RenderCapturedPiecesText = memo(({ pieces }) => {
+    let piecesNumber = CountPieces(pieces);
+    if(piecesNumber === 0){return;}
     return (<Text style={styles.capturedPiece}>
-      <Text style={styles.countColor}>{CountPieces(pieces)}:</Text> {pieces.join(", ")}
+      <Text style={styles.countColor}>{piecesNumber}:</Text> {pieces.join(", ")}
     </Text>);
   });
   const RenderText = ( rowIndex, colIndex) => {
@@ -221,7 +226,7 @@ const ChessBoard = () => {
       blackKingRow: king.blackKingRow, 
       blackKingCol: king.blackKingCol 
     };
-    console.log("TEST");
+    
     if(!testForStalemate && testForCheckmate){
       
       if(CheckForLegality(currentChessBoard)){
@@ -254,13 +259,13 @@ const ChessBoard = () => {
       if(currentChessBoard[rowIndex-1][colIndex] != null){
         if(currentTurn){
           setBlackPiecesCaptured(prevState => {
-            const newState = [...prevState[0], capturedPiece];
-            return [newState];
+            const newState = [...prevState, capturedPiece];
+            return newState;
           });
         }else{
           setWhitePiecesCaptured(prevState => {
-            const newState = [...prevState[0], capturedPiece];
-            return [newState];
+            const newState = [...prevState, capturedPiece];
+            return newState;
           });
         }
       }
@@ -298,7 +303,6 @@ const ChessBoard = () => {
       
       let newState = Array(8).fill(null).map(() => Array(4).fill(false));
 
-      console.log("Test");
 
       function CheckMoves(state, boardCopy, lastPiece, returnMove = false){
         

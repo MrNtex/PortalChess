@@ -164,13 +164,10 @@ const ChessBoard = () => {
       Q: 9,
     };
     let totalPoints = 0;
-    console.log( pieces.length);
     for (let i = 0; i < pieces.length; i++) {
       const piece = pieces[i];
-      console.log(piece);
       if (points[piece]) {
         totalPoints += points[piece];
-        console.log(totalPoints);
       }
     }
     return totalPoints;

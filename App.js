@@ -106,6 +106,7 @@ const ChessBoard = () => {
     blackKingCol: 2,
   });
 
+
   const CheckChessBoard = (turn) => {
     
     if(turn){
@@ -266,12 +267,19 @@ const ChessBoard = () => {
           });
         }
       }
-      let newTurn = !currentTurn;
+      let replacePieceWith = selectedPiece.type;
+      // Promotion of pawns
+      console.log(rowIndex);
+      if(selectedPiece.type === "P" && rowIndex === 8){
+        replacePieceWith = "Q";
+      }else if(selectedPiece.type === "p" && rowIndex === 1){
+        replacePieceWith = "q";
+      }
       setCurrentTurn(prevState => !prevState);
       setChessBoard(prevState => {
           let newState = [...prevState];          
           newState[selectedPiece.row-1][selectedPiece.col] = null;
-          newState[rowIndex-1][colIndex] = selectedPiece.type;  
+          newState[rowIndex-1][colIndex] = replacePieceWith;  
           //setCurrentTurn(prevTurn => !prevTurn);
           return newState;
       });
@@ -855,5 +863,25 @@ const styles = StyleSheet.create({
   },
   countColor: {
     color: '#f7f7f7'
+  },
+
+  //Modal
+  modal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000, // This ensures the modal is on top of everything else
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
   }
 });

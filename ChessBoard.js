@@ -1,8 +1,9 @@
-import React, { useMemo, useEffect  } from 'react';
+import React, { useMemo, useEffect, Pressable } from 'react';
 import { useState, memo } from 'react';
 import * as NavigationBar from 'expo-navigation-bar';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
+import { StyleSheet, Text, TouchableOpacity, View, Button, SafeAreaView } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
 const initialChessBoard = [
   ['N', 'Q', 'K', 'R'],
   ['P', 'P', 'P', 'P'],
@@ -24,9 +25,18 @@ const DEFAULT_HIGHLIGHTS = [
   [false, false, false, false],
 ];
 
-const ChessBoard = () => {
 
+const ChessBoard = () => {
+  const deepCopyChessBoard = (board) => board.map(row => [...row]);
   //TURN True = White, False = Black
+  function ResetBoard() {
+    setChessBoard(deepCopyChessBoard(initialChessBoard));
+    setCurrentTurn(true);
+    setHighLights(DEFAULT_HIGHLIGHTS);
+    setWhitePiecesCaptured([]);
+    setBlackPiecesCaptured([]);
+  };
+  
   const [currentTurn, setCurrentTurn] = useState(true);
   const hideNavigationBar = async () => {
     // Setting the visibility status of the Navigation Bar to "hidden".
@@ -45,6 +55,7 @@ const ChessBoard = () => {
     type: "p",
     white: true
   })
+  
   const [highLightsArray, setHighLights] = useState([
     [false, false, false, false],
     [false, false, false, false],
@@ -114,8 +125,6 @@ const ChessBoard = () => {
     blackKingRow: 7,
     blackKingCol: 2,
   });
-
-
   const CheckChessBoard = (turn) => {
     
     if(turn){
@@ -732,7 +741,8 @@ const ChessBoard = () => {
           break;
           case "k":
           case "K":
-            
+            ResetBoard();
+            break;
             // top movement
             updateStateForDirection(1, 0, 1);
             // down movement
@@ -761,39 +771,43 @@ const ChessBoard = () => {
       } 
     }
   }
+  const Tab = createBottomTabNavigator();
   return (
-    
-    
     <View>
-      
       {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
       <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
       <View style={styles.boardContainer}>
       {Array.from({ length: 10 }).map((_, rowIndex) => (
-        <View key={rowIndex} style={styles.row}>
+          <View key={rowIndex} style={styles.row}>
           {Array.from({ length: 4 }).map((_, colIndex) => (
-            <TouchableOpacity
+              <TouchableOpacity
               key={colIndex}
               onPress={() => handlePress(rowIndex, colIndex)}
-            >
-            <View
+              >
+              <View
               
               style={[
-                styles.cell,
-                RenderSquare(rowIndex, colIndex, highLightsArray)
-                
+                  styles.cell,
+                  RenderSquare(rowIndex, colIndex, highLightsArray)
+                  
               ]}
-            >
-            {RenderText(rowIndex, colIndex)}
-            {RenderPieces(rowIndex, colIndex)}
-            </View>
-            </TouchableOpacity>
+              >
+              {RenderText(rowIndex, colIndex)}
+              {RenderPieces(rowIndex, colIndex)}
+              </View>
+              </TouchableOpacity>
           ))}
-        </View>
+          </View>
       ))}
+      </View>
+      <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+      <Button
+        title="Forfeit"
+        onPress={() => ResetBoard()}
+        style={styles.forfeitButton}
+      />
     </View>
-    <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
-    </View>
+    
     
   );
 };
@@ -803,6 +817,10 @@ const styles = StyleSheet.create({
       backgroundColor: '#121212',
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    forfeitButton: {
+      marginTop: 20,
+      height: 70,
     },
     boardContainer: {
       marginTop: 20,  // Add some spacing between the text and the board

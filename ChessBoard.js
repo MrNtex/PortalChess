@@ -1,9 +1,13 @@
-import React, { useMemo, useEffect, Pressable } from 'react';
+import React, { useMemo, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useState, memo } from 'react';
 import * as NavigationBar from 'expo-navigation-bar';
-import { StyleSheet, Text, TouchableOpacity, View, Button, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Button, SafeAreaView, Pressable  } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
+
+import { Ionicons } from '@expo/vector-icons';
+
+
 const initialChessBoard = [
   ['N', 'Q', 'K', 'R'],
   ['P', 'P', 'P', 'P'],
@@ -25,8 +29,21 @@ const DEFAULT_HIGHLIGHTS = [
   [false, false, false, false],
 ];
 
-
+const DummyComponent = () => null;
 const ChessBoard = () => {
+  function SettingsScreen() {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Settings</Text>
+      </View>
+    );
+  }
+  function Forfeit() {
+    console.log("FF");
+  }
+
+
+  //CHESS BOARD
   const deepCopyChessBoard = (board) => board.map(row => [...row]);
   //TURN True = White, False = Black
   function ResetBoard() {
@@ -36,7 +53,6 @@ const ChessBoard = () => {
     setWhitePiecesCaptured([]);
     setBlackPiecesCaptured([]);
   };
-  
   const [currentTurn, setCurrentTurn] = useState(true);
   const hideNavigationBar = async () => {
     // Setting the visibility status of the Navigation Bar to "hidden".
@@ -773,40 +789,91 @@ const ChessBoard = () => {
   }
   const Tab = createBottomTabNavigator();
   return (
-    <View>
-      {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
-      <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
-      <View style={styles.boardContainer}>
-      {Array.from({ length: 10 }).map((_, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
-          {Array.from({ length: 4 }).map((_, colIndex) => (
-              <TouchableOpacity
-              key={colIndex}
-              onPress={() => handlePress(rowIndex, colIndex)}
-              >
-              <View
-              
-              style={[
-                  styles.cell,
-                  RenderSquare(rowIndex, colIndex, highLightsArray)
+    <View style={{flex:1}}>
+      <View style={styles.container}>
+        {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+        <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+        <View style={styles.boardContainer}>
+          {Array.from({ length: 10 }).map((_, rowIndex) => (
+              <View key={rowIndex} style={styles.row}>
+              {Array.from({ length: 4 }).map((_, colIndex) => (
+                  <TouchableOpacity
+                  key={colIndex}
+                  onPress={() => handlePress(rowIndex, colIndex)}
+                  >
+                  <View
                   
-              ]}
-              >
-              {RenderText(rowIndex, colIndex)}
-              {RenderPieces(rowIndex, colIndex)}
+                  style={[
+                      styles.cell,
+                      RenderSquare(rowIndex, colIndex, highLightsArray)
+                      
+                  ]}
+                  >
+                  {RenderText(rowIndex, colIndex)}
+                  {RenderPieces(rowIndex, colIndex)}
+                  </View>
+                  </TouchableOpacity>
+              ))}
               </View>
-              </TouchableOpacity>
           ))}
-          </View>
-      ))}
+          <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+        </View>
       </View>
-      <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
-      <Button
-        title="Forfeit"
-        onPress={() => ResetBoard()}
-        style={styles.forfeitButton}
-      />
-    </View>
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
+
+              if (route.name === 'Forfeit') {
+                iconName = focused ? 'flag' : 'flag-outline';
+              } else if (route.name === 'Settings') {
+                iconName = focused ? 'build' : 'build-outline';
+              }
+
+              return <Ionicons name={iconName} size={size} color={color} />;
+            },
+            headerShown: false, // hide the top bar
+            tabBarActiveTintColor: '#d6b892',
+            tabBarInactiveTintColor: 'gray',
+            tabBarStyle: {
+              display: 'flex',
+              flexDirection: 'row', // Ensures items are laid out in a row
+              justifyContent: 'space-evenly', // Distributes space evenly
+            },
+          })}
+          safeAreaInsets={{ top: 0, bottom: 0 }}
+        >
+          <Tab.Screen 
+          name="Settings" 
+          component={DummyComponent} 
+          listeners={{
+            tabPress: (e) => {
+              // Prevent default action
+              e.preventDefault();
+              handleSettingsPress();
+            },
+          }}
+        />
+          <Tab.Screen
+            name="Forfeit"
+            component={DummyComponent}
+            listeners={({ navigation, route }) => ({
+              tabPress: (e) => {
+                // Prevent default action (which is navigating to the tab)
+                e.preventDefault();
+
+                // Call your function here
+                ResetBoard();
+
+                // If you also need to navigate somewhere else, you can do it like this:
+                // navigation.navigate('SomeOtherRoute');
+              },
+            })}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+  </View>
     
     
   );
@@ -821,6 +888,13 @@ const styles = StyleSheet.create({
     forfeitButton: {
       marginTop: 20,
       height: 70,
+      backgroundColor: 'black',
+    },
+    forfeitButtonText: {
+      color: 'white',
+      fontSize: 21,
+      textAlign: 'center',
+      fontWeight: 'bold'
     },
     boardContainer: {
       marginTop: 20,  // Add some spacing between the text and the board

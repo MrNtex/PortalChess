@@ -787,9 +787,8 @@ const ChessBoard = () => {
       } 
     }
   }
-  const Tab = createBottomTabNavigator();
-  return (
-    <View style={{flex:1}}>
+  function PlayChess() {
+    return (
       <View style={styles.container}>
         {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
         <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
@@ -819,16 +818,25 @@ const ChessBoard = () => {
           <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
         </View>
       </View>
+    );
+  }
+  const Tab = createBottomTabNavigator();
+  return (
+    
+    <View style={{flex:1}}>
+      
       <NavigationContainer>
         <Tab.Navigator
           screenOptions={({ route }) => ({
             tabBarIcon: ({ focused, color, size }) => {
               let iconName;
-
+              
               if (route.name === 'Forfeit') {
                 iconName = focused ? 'flag' : 'flag-outline';
               } else if (route.name === 'Settings') {
                 iconName = focused ? 'build' : 'build-outline';
+              }else if (route.name === 'Play') {
+                iconName = focused ? 'cube' : 'cube-outline';
               }
 
               return <Ionicons name={iconName} size={size} color={color} />;
@@ -844,6 +852,17 @@ const ChessBoard = () => {
           })}
           safeAreaInsets={{ top: 0, bottom: 0 }}
         >
+          <Tab.Screen 
+          name="Play" 
+          component={PlayChess} 
+          listeners={{
+            tabPress: (e) => {
+              // Prevent default action
+              e.preventDefault();
+              handleSettingsPress();
+            },
+          }}
+        />
           <Tab.Screen 
           name="Settings" 
           component={DummyComponent} 

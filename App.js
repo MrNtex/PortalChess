@@ -5,13 +5,16 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import ChessBoard from './ChessBoard.js';
+import { SettingsProvider } from './SettingsContext.js';
 
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <ChessBoard/>
+    <SettingsProvider>
+      <ChessBoard/>
+    </SettingsProvider>
   );
 }
 

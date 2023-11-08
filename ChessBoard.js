@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useMemo, useEffect, useContext } from 'react';
 import { useState, memo } from 'react';
 import * as NavigationBar from 'expo-navigation-bar';
 import { StyleSheet, Text, TouchableOpacity, View, Button, SafeAreaView, Pressable  } from 'react-native';
@@ -7,6 +7,8 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import SettingsMenu, { rotateBoard } from './SettingsMenu.js';
+import { SettingsContext, SettingsProvider } from './SettingsContext';
 
 const initialChessBoard = [
   ['N', 'Q', 'K', 'R'],
@@ -787,44 +789,116 @@ const ChessBoard = () => {
       } 
     }
   }
+  const { rotateBoard, darkMode } = useContext(SettingsContext);
   function PlayChess() {
-    return (
-      <View style={styles.container}>
-        {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
-        <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
-        <View style={styles.boardContainer}>
-          {Array.from({ length: 10 }).map((_, rowIndex) => (
-              <View key={rowIndex} style={styles.row}>
-              {Array.from({ length: 4 }).map((_, colIndex) => (
-                  <TouchableOpacity
-                  key={colIndex}
-                  onPress={() => handlePress(rowIndex, colIndex)}
-                  >
-                  <View
-                  
-                  style={[
-                      styles.cell,
-                      RenderSquare(rowIndex, colIndex, highLightsArray)
-                      
-                  ]}
-                  >
-                  {RenderText(rowIndex, colIndex)}
-                  {RenderPieces(rowIndex, colIndex)}
-                  </View>
-                  </TouchableOpacity>
-              ))}
-              </View>
-          ))}
-          <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+    if(!rotateBoard){
+      return (
+        <View style={darkMode ? styles.container : styles.LightContainer}>
+          {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+          <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+          <View style={styles.boardContainer}>
+            {Array.from({ length: 10 }).map((_, rowIndex) => (
+                <View key={rowIndex} style={styles.row}>
+                {Array.from({ length: 4 }).map((_, colIndex) => (
+                    <TouchableOpacity
+                    key={colIndex}
+                    onPress={() => handlePress(rowIndex, colIndex)}
+                    >
+                    <View
+                    
+                    style={[
+                        styles.cell,
+                        RenderSquare(rowIndex, colIndex, highLightsArray)
+                        
+                    ]}
+                    >
+                    {RenderText(rowIndex, colIndex)}
+                    {RenderPieces(rowIndex, colIndex)}
+                    </View>
+                    </TouchableOpacity>
+                ))}
+                </View>
+            ))}
+            <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+          </View>
         </View>
-      </View>
-    );
+      );
+    }else{
+      if(currentTurn){
+        return (
+          <View style={darkMode ? styles.container : styles.LightContainer}>
+            {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+            <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+            <View style={styles.boardContainer}>
+              {Array.from({ length: 10 }).map((_, rowIndex) => (
+                  <View key={9 - rowIndex} style={styles.row}>
+                  {Array.from({ length: 4 }).map((_, colIndex) => (
+                      <TouchableOpacity
+                      key={colIndex}
+                      onPress={() => handlePress(9 - rowIndex, colIndex)}
+                      >
+                      <View
+                      
+                      style={[
+                          styles.cell,
+                          RenderSquare(9 - rowIndex, colIndex, highLightsArray)
+                          
+                      ]}
+                      >
+                      {RenderText(9 - rowIndex, colIndex)}
+                      {RenderPieces(9 - rowIndex, colIndex)}
+                      </View>
+                      </TouchableOpacity>
+                  ))}
+                  </View>
+              ))}
+              <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+            </View>
+          </View>
+        );
+      }
+      else{
+        return (
+          <View style={darkMode ? styles.container : styles.LightContainer}>
+            {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+            <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+            <View style={styles.boardContainer}>
+              {Array.from({ length: 10 }).map((_, rowIndex) => (
+                  <View key={rowIndex} style={styles.row}>
+                  {Array.from({ length: 4 }).map((_, colIndex) => (
+                      <TouchableOpacity
+                      key={colIndex}
+                      onPress={() => handlePress(rowIndex, colIndex)}
+                      >
+                      <View
+                      
+                      style={[
+                          styles.cell,
+                          RenderSquare(rowIndex, colIndex, highLightsArray)
+                          
+                      ]}
+                      >
+                      {RenderText(rowIndex, colIndex)}
+                      {RenderPieces(rowIndex, colIndex)}
+                      </View>
+                      </TouchableOpacity>
+                  ))}
+                  </View>
+              ))}
+              <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+            </View>
+          </View>
+        );
+      }
+    }
+  }
+  function Settings(){
+    return(<SettingsMenu></SettingsMenu>);
   }
   const Tab = createBottomTabNavigator();
   return (
     
     <View style={{flex:1}}>
-      
       <NavigationContainer>
         <Tab.Navigator
           screenOptions={({ route }) => ({
@@ -842,9 +916,10 @@ const ChessBoard = () => {
               return <Ionicons name={iconName} size={size} color={color} />;
             },
             headerShown: false, // hide the top bar
-            tabBarActiveTintColor: '#d6b892',
-            tabBarInactiveTintColor: 'gray',
+            tabBarActiveTintColor: darkMode ? 'white' : '#d6b892',
+            tabBarInactiveTintColor: darkMode ? 'lightgray' :'gray',
             tabBarStyle: {
+              backgroundColor: darkMode ? '#242424' : 'white',
               display: 'flex',
               flexDirection: 'row', // Ensures items are laid out in a row
               justifyContent: 'space-evenly', // Distributes space evenly
@@ -855,24 +930,10 @@ const ChessBoard = () => {
           <Tab.Screen 
           name="Play" 
           component={PlayChess} 
-          listeners={{
-            tabPress: (e) => {
-              // Prevent default action
-              e.preventDefault();
-              handleSettingsPress();
-            },
-          }}
         />
           <Tab.Screen 
           name="Settings" 
-          component={DummyComponent} 
-          listeners={{
-            tabPress: (e) => {
-              // Prevent default action
-              e.preventDefault();
-              handleSettingsPress();
-            },
-          }}
+          component={Settings} 
         />
           <Tab.Screen
             name="Forfeit"
@@ -901,6 +962,12 @@ const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#121212',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    LightContainer: {
+      flex: 1,
+      backgroundColor: '#f7f7f7',
       alignItems: 'center',
       justifyContent: 'center',
     },

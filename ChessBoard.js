@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useContext } from 'react';
 import { useState, memo } from 'react';
 import * as NavigationBar from 'expo-navigation-bar';
-import { StyleSheet, Text, TouchableOpacity, View, Button, SafeAreaView, Pressable  } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image  } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 
@@ -10,6 +10,30 @@ import { Ionicons } from '@expo/vector-icons';
 import SettingsMenu, { rotateBoard } from './SettingsMenu.js';
 import { SettingsContext, SettingsProvider } from './SettingsContext';
 
+import BlackKing from './Pieces/BlackKing.png';
+import BlackQueen from './Pieces/BlackQueen.png';
+import BlackRook from './Pieces/BlackRook.png';
+import BlackKnight from './Pieces/BlackKnight.png';
+import BlackPawn from './Pieces/BlackPawn.png';
+import WhiteKing from './Pieces/WhiteKing.png';
+import WhiteQueen from './Pieces/WhiteQueen.png';
+import WhiteRook from './Pieces/WhiteRook.png';
+import WhiteKnight from './Pieces/WhiteKnight.png';
+import WhitePawn from './Pieces/WhitePawn.png';
+
+
+const chessPieceImages = {
+  'k': BlackKing,
+  'q': BlackQueen,
+  'r': BlackRook,
+  'n': BlackKnight,
+  'p': BlackPawn,
+  'K': WhiteKing,
+  'Q': WhiteQueen,
+  'R': WhiteRook,
+  'N': WhiteKnight,
+  'P': WhitePawn,
+};
 const initialChessBoard = [
   ['N', 'Q', 'K', 'R'],
   ['P', 'P', 'P', 'P'],
@@ -246,7 +270,8 @@ const ChessBoard = () => {
     const piece = currentChessBoard[rowIndex-1][colIndex];
 
     if (piece) {
-        return <Text style={styles.piece}>{piece}</Text>;
+      //Selecting image
+      return <Image source={chessPieceImages[piece]} style={styles.piece}></Image>;
     }
 
     return null;
@@ -396,6 +421,7 @@ const ChessBoard = () => {
             // Check boundary conditions for both rows and columns
             if (newRow >= 0 && newRow < testArray.length && newCol >= 0 && newCol <= 3) {
               if (testArray[newRow][newCol] !== null) {
+                if(i == 1 && (currentTurn ? testArray[newRow][newCol] === "k" : testArray[newRow][newCol] === "K")) return false;
                 if((currentTurn ? testArray[newRow][newCol] === "q" : testArray[newRow][newCol] === "Q") || (checkForRooks && (currentTurn ? testArray[newRow][newCol] === "r" : testArray[newRow][newCol] === "R"))){
                   return false;
                 }
@@ -759,8 +785,6 @@ const ChessBoard = () => {
           break;
           case "k":
           case "K":
-            ResetBoard();
-            break;
             // top movement
             updateStateForDirection(1, 0, 1);
             // down movement
@@ -1001,16 +1025,24 @@ const styles = StyleSheet.create({
     whiteCell: {
       //backgroundColor: '#edc200',
       backgroundColor: '#d6b892',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     blackCell: {
       backgroundColor: '#242424',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     whiteCellHighlight: {
       //backgroundColor: '#edc200',
       backgroundColor: '#faf3eb',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     blackCellHighlight: {
       backgroundColor: '#737373',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     cellText: {
       color: 'white',
@@ -1026,10 +1058,9 @@ const styles = StyleSheet.create({
       top: 8,
     },
     piece: {
-      color: 'white',
-      fontSize: 36,
-      textAlign: 'center',
-      top: 8,
+      width: '94%', // or another percentage or fixed size to scale the image
+      height: '94%', // or another percentage or fixed size to scale the image
+      resizeMode: 'contain', // this makes sure the image scales within the square
     },
   
     roundText: {

@@ -974,7 +974,7 @@ const ChessBoard = () => {
                 ))}
                 </View>
             ))}
-            <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+            <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
           </View>
         </View>
         );

@@ -1,20 +1,30 @@
 import React, {useState, useRef, useContext } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import ChessBoard from './ChessBoard.js';
 import { SettingsProvider } from './SettingsContext.js';
+import {StatusBarStyle} from 'react-native';
 
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <SettingsProvider>
-      <ChessBoard/>
-    </SettingsProvider>
+    <SafeAreaView>
+      <StatusBar
+          animated={true}
+          backgroundColor="#61dafb"
+          barStyle={statusBarStyle}
+          showHideTransition={statusBarTransition}
+          hidden={hidden}
+        />
+      <SettingsProvider>
+        <ChessBoard/>
+      </SettingsProvider>
+    </SafeAreaView>
   );
 }
 

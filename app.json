@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "PortalChess",
+    "name": "Portal Chess",
     "slug": "PortalChess",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/PCIcon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",

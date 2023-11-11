@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useContext } from 'react';
 import { useState, memo } from 'react';
 import * as NavigationBar from 'expo-navigation-bar';
-import { StyleSheet, Text, TouchableOpacity, View, Image  } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image, Modal  } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 
@@ -13,10 +13,12 @@ import { SettingsContext, SettingsProvider } from './SettingsContext';
 import BlackKing from './Pieces/BlackKing.png';
 import BlackQueen from './Pieces/BlackQueen.png';
 import BlackRook from './Pieces/BlackRook.png';
+//import BlackBishop from '.Pieces/BlackBishop.png';
 import BlackKnight from './Pieces/BlackKnight.png';
 import BlackPawn from './Pieces/BlackPawn.png';
 import WhiteKing from './Pieces/WhiteKing.png';
 import WhiteQueen from './Pieces/WhiteQueen.png';
+//import WhiteBishop from './Pieces/WhiteBishop.png';
 import WhiteRook from './Pieces/WhiteRook.png';
 import WhiteKnight from './Pieces/WhiteKnight.png';
 import WhitePawn from './Pieces/WhitePawn.png';
@@ -88,7 +90,7 @@ const ChessBoard = () => {
   const handlePress = (row, col) => {
     hideNavigationBar();
     if(col >= 0 && col <= 4 && row >= 1 && row <= 8){
-      SelectPiece(row, col)
+      SelectPiece(row, col);
     }
   };
   const [selectedPiece, setSelectedPiece] = useState({
@@ -137,15 +139,15 @@ const ChessBoard = () => {
     if(whitePiecesCaptured.length >= 6 && blackPiecesCaptured.length >= 6)
     {
       if(TestForStalemate){
-        console.log("Stalemate");
+        setIsStaleMateModalVisible(true);
       }
     } 
     if (!CheckChessBoard(currentTurn)) {
       if(!SelectPiece(0,0,false,true)){
-        console.log("Checkmate!");
+        setIsCheckMateModalVisible(true);
         return;
       }else{
-        console.log("Stalemate");
+        setIsStaleMateModalVisible(true);
       }
     }
   }, [currentChessBoard, currentTurn]); 
@@ -250,33 +252,46 @@ const ChessBoard = () => {
         return null;
     }, [rowIndex, colIndex]);
   };
-  const RenderSquare = ( rowIndex, colIndex, highlights) => {
-    return useMemo(() => {
-        if (rowIndex === 0 || rowIndex === 9) {
-        return styles.borderCell;
-        } 
-        if(highLightsArray[rowIndex-1][colIndex]){
-        return ((rowIndex + colIndex) % 2 === 0) ? styles.whiteCellHighlight : styles.blackCellHighlight;
-        }
-
-        return ((rowIndex + colIndex) % 2 === 0) ? styles.whiteCell : styles.blackCell;
-    }, [rowIndex, colIndex, highlights]);
-  };
-  const RenderPieces = (rowIndex, colIndex) => {
-    if (rowIndex === 0 || rowIndex === 15 || rowIndex > currentChessBoard.length) {
-        return null
+  const RenderSquare = React.memo(({ rowIndex, colIndex, highLight }) => {
+    if (rowIndex === 0 || rowIndex === 9) {
+      return (
+        <View style={[
+          styles.cell,
+          styles.borderCell]}>
+          {RenderText(rowIndex, colIndex)}
+          </View>
+      );
     }
-
-    const piece = currentChessBoard[rowIndex-1][colIndex];
-
-    if (piece) {
-      //Selecting image
-      return <Image source={chessPieceImages[piece]} style={styles.piece}></Image>;
+    if (highLight) {
+      return (
+        <View style={[
+          styles.cell,
+          ((rowIndex + colIndex) % 2 === 0) ? styles.whiteCellHighlight : styles.blackCellHighlight]}>
+          {RenderText(rowIndex, colIndex)}
+          {rowIndex !== 0 && rowIndex !== 15 && rowIndex <= currentChessBoard.length && (
+            <RenderPieces piece={currentChessBoard[rowIndex - 1][colIndex]} style={styles.piece} />
+          )}
+        </View>
+      );
     }
+    return (
+      <View style={[
+        styles.cell,
+        ((rowIndex + colIndex) % 2 === 0) ? styles.whiteCell : styles.blackCell]}>
+        {RenderText(rowIndex, colIndex)}
+        {rowIndex !== 0 && rowIndex !== 15 && rowIndex <= currentChessBoard.length && (
+          <RenderPieces piece={currentChessBoard[rowIndex - 1][colIndex]} style={styles.piece} />
+        )}
+      </View>
+    );
+  });
+  const RenderPieces = React.memo(({ piece, style }) => {
+    if (piece == null) return null;
+    return (
+      <Image source={chessPieceImages[piece]} style={style} />
+    );
+  });
 
-    return null;
-  };
-  
   const SelectPiece = (rowIndex,colIndex, testForStalemate = false, testForCheckmate = false) => {
     
     let tempKing = { // I use tempKing due to React's asynchronous nature
@@ -336,13 +351,17 @@ const ChessBoard = () => {
         replacePieceWith = "q";
       }
       setCurrentTurn(prevState => !prevState);
-      setChessBoard(prevState => {
-          let newState = [...prevState];          
-          newState[selectedPiece.row-1][selectedPiece.col] = null;
-          newState[rowIndex-1][colIndex] = replacePieceWith;  
-          //setCurrentTurn(prevTurn => !prevTurn);
-          return newState;
-      });
+      const newBoard = currentChessBoard.map((row => row.slice()));
+      newBoard[selectedPiece.row-1][selectedPiece.col] = null;
+      newBoard[rowIndex-1][colIndex] = replacePieceWith;
+      setChessBoard(newBoard);
+      // setChessBoard(prevState => {
+      //     let newState = [...prevState];          
+      //     newState[selectedPiece.row-1][selectedPiece.col] = null;
+      //     newState[rowIndex-1][colIndex] = replacePieceWith;  
+      //     //setCurrentTurn(prevTurn => !prevTurn);
+      //     return newState;
+      // });
       setHighLights(DEFAULT_HIGHLIGHTS);
 
       //Check for stalemate / chackmate
@@ -352,14 +371,13 @@ const ChessBoard = () => {
       // SELECT PIECE
       
       let chessPieceSelected = currentChessBoard[rowIndex-1][colIndex];
-        
+      
       //setHighLights(DEFAULT_HIGHLIGHTS);
       setSelectedPiece({
           row: rowIndex, 
           col: colIndex,  
           type: chessPieceSelected,
       });
-      
       if(!testForStalemate && (chessPieceSelected == chessPieceSelected.toUpperCase()) != currentTurn){
         setHighLights(DEFAULT_HIGHLIGHTS);
         return newState;
@@ -813,37 +831,108 @@ const ChessBoard = () => {
       } 
     }
   }
+  const [isForfeitModalVisible, setIsForfeitModalVisible] = useState(false);
+  const ForfeitButton = () => {
+    ResetBoard();
+    setIsForfeitModalVisible(false);
+  }
+  const ForfeitModal = () => {
+    return (
+      <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isForfeitModalVisible}
+      onRequestClose={setIsForfeitModalVisible(false)}
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalText}>Are you sure you want to forfeit?</Text>
+          <View style={styles.modalButtonsContainer}>
+            <TouchableOpacity style={styles.modalButton} onPress={ForfeitButton}>
+              <Text style={styles.modalButtonText}>Yes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalButton} onPress={setIsForfeitModalVisible(false)}>
+              <Text style={styles.modalButtonText}>No</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+  const [isCheckMateModalVisible, setIsCheckMateModalVisible] = useState(false);
+  const closeCheckMateModal = () => setIsCheckMateModalVisible(false);
+  const CheckMateButton = () => {
+    ResetBoard();
+    closeCheckMateModal();
+  }
+  const CheckMateModal = () => {
+    return (
+      <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isCheckMateModalVisible}
+      onRequestClose={closeCheckMateModal}
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalText}>CheckMate!</Text>
+          <View style={styles.modalButtonsContainer}>
+            <TouchableOpacity style={styles.modalButton} onPress={CheckMateButton}>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+  const [isStaleMateModalVisible, setIsStaleMateModalVisible] = useState(false);
+  const closeStaleMateModal = () => setIsStaleMateModalVisible(false);
+  const StaleMateButton = () => {
+    ResetBoard();
+    closeStaleMateModal();
+  }
+  const StaleMateModal = () => {
+    return (
+      <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isStaleMateModalVisible}
+      onRequestClose={closeStaleMateModal}
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalText}>CheckMate!</Text>
+          <View style={styles.modalButtonsContainer}>
+            <TouchableOpacity style={styles.modalButton} onPress={StaleMateButton}>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
   const { rotateBoard, darkMode } = useContext(SettingsContext);
   function PlayChess() {
     if(!rotateBoard){
       return (
+        
         <View style={darkMode ? styles.container : styles.LightContainer}>
           {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+          <ForfeitModal/>
+          <CheckMateModal/>
+          <StaleMateModal/>
           <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
           <View style={styles.boardContainer}>
             {Array.from({ length: 10 }).map((_, rowIndex) => (
-                <View key={rowIndex} style={styles.row}>
+              <View key={rowIndex} style={styles.row}>
                 {Array.from({ length: 4 }).map((_, colIndex) => (
                     <TouchableOpacity
-                    key={colIndex}
-                    onPress={() => handlePress(rowIndex, colIndex)}
+                      key={colIndex}
+                      onPress={() => handlePress(rowIndex, colIndex)}
                     >
-                    <View
-                    
-                    style={[
-                        styles.cell,
-                        RenderSquare(rowIndex, colIndex, highLightsArray)
-                        
-                    ]}
-                    >
-                    {RenderText(rowIndex, colIndex)}
-                    {RenderPieces(rowIndex, colIndex)}
-                    </View>
+                      <RenderSquare rowIndex={rowIndex} colIndex={colIndex} highLight={rowIndex === 0 || rowIndex === 9 ? null : highLightsArray[rowIndex - 1][colIndex]}/>
                     </TouchableOpacity>
                 ))}
                 </View>
             ))}
-            <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+            <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
           </View>
         </View>
       );
@@ -870,7 +959,11 @@ const ChessBoard = () => {
                       ]}
                       >
                       {RenderText(9 - rowIndex, colIndex)}
-                      {RenderPieces(9 - rowIndex, colIndex)}
+                      <RenderPieces 
+                        piece={currentChessBoard[rowIndex - 1][colIndex]} 
+                        imageSource={chessPieceImages[currentChessBoard[rowIndex - 1][colIndex]]}
+                        style={styles.piece} 
+                      />
                       </View>
                       </TouchableOpacity>
                   ))}
@@ -903,7 +996,10 @@ const ChessBoard = () => {
                       ]}
                       >
                       {RenderText(rowIndex, colIndex)}
-                      {RenderPieces(rowIndex, colIndex)}
+                      <RenderPieces 
+                        imageSource={chessPieceImages[currentChessBoard[rowIndex - 1][colIndex]]}
+                        style={styles.piece} 
+                      />
                       </View>
                       </TouchableOpacity>
                   ))}
@@ -968,7 +1064,7 @@ const ChessBoard = () => {
                 e.preventDefault();
 
                 // Call your function here
-                ResetBoard();
+                setIsForfeitModalVisible(true);
 
                 // If you also need to navigate somewhere else, you can do it like this:
                 // navigation.navigate('SomeOtherRoute');
@@ -1088,7 +1184,7 @@ const styles = StyleSheet.create({
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.7)',
+      backgroundColor: 'gray',
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000, // This ensures the modal is on top of everything else
@@ -1096,9 +1192,28 @@ const styles = StyleSheet.create({
     modalContent: {
       width: '80%',
       padding: 20,
-      backgroundColor: '#fff',
+      backgroundColor: 'darkgray',
       borderRadius: 10,
       alignItems: 'center',
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: "center"
+    },
+    modalButton: {
+      backgroundColor: 'black',
+      padding: 10,
+      borderRadius: 5,
+      margin: 5,
+      alignItems: 'center',
+    },
+    modalButtonsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalButtonText: {
+      color: 'white',
     }
   });
 export default ChessBoard;

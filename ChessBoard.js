@@ -922,7 +922,7 @@ const ChessBoard = () => {
                 ))}
                 </View>
             ))}
-            <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+            <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
           </View>
         </View>
       );
@@ -934,7 +934,7 @@ const ChessBoard = () => {
           <CheckMateModal/>
           <StaleMateModal/>
           {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
-          <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+          <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
           <View style={styles.boardContainer}>
             {Array.from({ length: 10 }).map((_, rowIndex) => (
               <View key={9-rowIndex} style={styles.row}>

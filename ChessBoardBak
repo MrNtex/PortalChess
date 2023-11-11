@@ -59,6 +59,17 @@ const DEFAULT_HIGHLIGHTS = [
 
 const DummyComponent = () => null;
 const ChessBoard = () => {
+  function SettingsScreen() {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Settings</Text>
+      </View>
+    );
+  }
+  function Forfeit() {
+    console.log("FF");
+  }
+
 
   //CHESS BOARD
   const deepCopyChessBoard = (board) => board.map(row => [...row]);
@@ -831,7 +842,7 @@ const ChessBoard = () => {
       animationType="slide"
       transparent={true}
       visible={isForfeitModalVisible}
-      onRequestClose={() => setIsForfeitModalVisible(false)}
+      onRequestClose={setIsForfeitModalVisible(false)}
       >
         <View style={styles.modalContent}>
           <Text style={styles.modalText}>Are you sure you want to forfeit?</Text>
@@ -839,10 +850,9 @@ const ChessBoard = () => {
             <TouchableOpacity style={styles.modalButton} onPress={ForfeitButton}>
               <Text style={styles.modalButtonText}>Yes</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalButton} onPress={() => setIsForfeitModalVisible(false)}>
+            <TouchableOpacity style={styles.modalButton} onPress={setIsForfeitModalVisible(false)}>
               <Text style={styles.modalButtonText}>No</Text>
             </TouchableOpacity>
-
           </View>
         </View>
       </Modal>
@@ -904,10 +914,10 @@ const ChessBoard = () => {
       return (
         
         <View style={darkMode ? styles.container : styles.LightContainer}>
+          {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
           <ForfeitModal/>
           <CheckMateModal/>
           <StaleMateModal/>
-          {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
           <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
           <View style={styles.boardContainer}>
             {Array.from({ length: 10 }).map((_, rowIndex) => (
@@ -930,53 +940,74 @@ const ChessBoard = () => {
       if(currentTurn){
         return (
           <View style={darkMode ? styles.container : styles.LightContainer}>
-          <ForfeitModal/>
-          <CheckMateModal/>
-          <StaleMateModal/>
-          {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
-          <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
-          <View style={styles.boardContainer}>
-            {Array.from({ length: 10 }).map((_, rowIndex) => (
-              <View key={9-rowIndex} style={styles.row}>
-                {Array.from({ length: 4 }).map((_, colIndex) => (
-                    <TouchableOpacity
+            {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+            <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+            <View style={styles.boardContainer}>
+              {Array.from({ length: 10 }).map((_, rowIndex) => (
+                  <View key={9 - rowIndex} style={styles.row}>
+                  {Array.from({ length: 4 }).map((_, colIndex) => (
+                      <TouchableOpacity
                       key={colIndex}
-                      onPress={() => handlePress(9-rowIndex, colIndex)}
-                    >
-                      <RenderSquare rowIndex={9-rowIndex} colIndex={colIndex} highLight={9-rowIndex === 0 || 9-rowIndex === 9 ? null : highLightsArray[9-rowIndex - 1][colIndex]}/>
-                    </TouchableOpacity>
-                ))}
-                </View>
-            ))}
-            <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+                      onPress={() => handlePress(9 - rowIndex, colIndex)}
+                      >
+                      <View
+                      
+                      style={[
+                          styles.cell,
+                          RenderSquare(9 - rowIndex, colIndex, highLightsArray)
+                          
+                      ]}
+                      >
+                      {RenderText(9 - rowIndex, colIndex)}
+                      <RenderPieces 
+                        piece={currentChessBoard[rowIndex - 1][colIndex]} 
+                        imageSource={chessPieceImages[currentChessBoard[rowIndex - 1][colIndex]]}
+                        style={styles.piece} 
+                      />
+                      </View>
+                      </TouchableOpacity>
+                  ))}
+                  </View>
+              ))}
+              <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+            </View>
           </View>
-        </View>
         );
       }
       else{
         return (
           <View style={darkMode ? styles.container : styles.LightContainer}>
-          <ForfeitModal/>
-          <CheckMateModal/>
-          <StaleMateModal/>
-          {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
-          <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
-          <View style={styles.boardContainer}>
-            {Array.from({ length: 10 }).map((_, rowIndex) => (
-              <View key={rowIndex} style={styles.row}>
-                {Array.from({ length: 4 }).map((_, colIndex) => (
-                    <TouchableOpacity
+            {currentTurn ? <Text style={styles.roundText}>White's turn</Text>: <Text style={styles.roundText}>Black's turn</Text> }
+            <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+            <View style={styles.boardContainer}>
+              {Array.from({ length: 10 }).map((_, rowIndex) => (
+                  <View key={rowIndex} style={styles.row}>
+                  {Array.from({ length: 4 }).map((_, colIndex) => (
+                      <TouchableOpacity
                       key={colIndex}
                       onPress={() => handlePress(rowIndex, colIndex)}
-                    >
-                      <RenderSquare rowIndex={rowIndex} colIndex={colIndex} highLight={rowIndex === 0 || rowIndex === 9 ? null : highLightsArray[rowIndex - 1][colIndex]}/>
-                    </TouchableOpacity>
-                ))}
-                </View>
-            ))}
-            <RenderCapturedPiecesText pieces={blackPiecesCaptured} />
+                      >
+                      <View
+                      
+                      style={[
+                          styles.cell,
+                          RenderSquare(rowIndex, colIndex, highLightsArray)
+                          
+                      ]}
+                      >
+                      {RenderText(rowIndex, colIndex)}
+                      <RenderPieces 
+                        imageSource={chessPieceImages[currentChessBoard[rowIndex - 1][colIndex]]}
+                        style={styles.piece} 
+                      />
+                      </View>
+                      </TouchableOpacity>
+                  ))}
+                  </View>
+              ))}
+              <RenderCapturedPiecesText pieces={whitePiecesCaptured} />
+            </View>
           </View>
-        </View>
         );
       }
     }
@@ -1033,7 +1064,6 @@ const ChessBoard = () => {
                 e.preventDefault();
 
                 // Call your function here
-                console.log('Forfeit button pressed');
                 setIsForfeitModalVisible(true);
 
                 // If you also need to navigate somewhere else, you can do it like this:
@@ -1070,7 +1100,7 @@ const styles = StyleSheet.create({
       color: 'white',
       fontSize: 21,
       textAlign: 'center',
-      fontWeight: 'bold',
+      fontWeight: 'bold'
     },
     boardContainer: {
       marginTop: 20,  // Add some spacing between the text and the board
@@ -1149,25 +1179,25 @@ const styles = StyleSheet.create({
   
     //Modal
     modal: {
-      position: 'absolute', // Position the modal absolutely
-        width: '100%',        // Cover the entire screen width
-        height: '100%',       // Cover the entire screen height
-        justifyContent: 'center', // Center vertically
-        alignItems: 'center',     // Center horizontally
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'gray',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000, // This ensures the modal is on top of everything else
     },
     modalContent: {
       width: '80%',
-        padding: 20,
-        backgroundColor: '#242424',
-        borderRadius: 10,
-        alignItems: 'center',
-        alignSelf: 'center', // Center the content within the modal
+      padding: 20,
+      backgroundColor: 'darkgray',
+      borderRadius: 10,
+      alignItems: 'center',
     },
     modalText: {
       marginBottom: 15,
-      color: 'white',
-      fontWeight: 'bold',
       textAlign: "center"
     },
     modalButton: {

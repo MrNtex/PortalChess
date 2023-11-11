@@ -4,12 +4,12 @@
     "slug": "PortalChess",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/PCIcon.png",
+    "icon": "./assets/IconAD.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,9 +19,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/IconAD.png",
+        "backgroundColor": "#000000"
       },
+      "versionCode": 3,
       "package": "com.anindustries.PortalChess"
     },
     "web": {

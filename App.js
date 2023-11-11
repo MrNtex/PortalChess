@@ -13,18 +13,11 @@ const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <SafeAreaView>
-      <StatusBar
-          animated={true}
-          backgroundColor="#121212"
-          barStyle={statusBarStyle}
-          showHideTransition={statusBarTransition}
-          hidden={hidden}
-        />
-      <SettingsProvider>
-        <ChessBoard/>
-      </SettingsProvider>
-    </SafeAreaView>
+
+    <SettingsProvider>
+      <StatusBar hidden />
+      <ChessBoard/>
+    </SettingsProvider>
   );
 }
 

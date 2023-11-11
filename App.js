@@ -16,7 +16,7 @@ export default function App() {
     <SafeAreaView>
       <StatusBar
           animated={true}
-          backgroundColor="#61dafb"
+          backgroundColor="#121212"
           barStyle={statusBarStyle}
           showHideTransition={statusBarTransition}
           hidden={hidden}

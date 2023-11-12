@@ -228,7 +228,14 @@ const ChessBoard = () => {
     let piecesNumber = CountPieces(pieces);
     if(piecesNumber === 0){return;}
     return (<Text style={styles.capturedPiece}>
-      <Text style={styles.countColor}>{piecesNumber}:</Text> {pieces.join(", ")}
+      <Text style={styles.countColor}>{piecesNumber}:</Text>
+      {pieces.map((piece, index) => (
+        <Image
+          key={index}
+          source={chessPieceImages[piece]}
+          style={styles.pieceIcon} // Define this style as needed
+        />
+      ))}
     </Text>);
   });
   const RenderText = ( rowIndex, colIndex) => {
@@ -1145,6 +1152,14 @@ const styles = StyleSheet.create({
     },
     countColor: {
       color: '#f7f7f7'
+    },
+    pieceIcon: {
+      width: 30,
+      height: 30,
+      resizeMode: 'contain',
+      borderColor: 'white', // Set border color to white
+      borderWidth: 2, // Set border width, adjust as needed
+      borderRadius: 15, // Optional: to make the border rounded
     },
   
     //Modal

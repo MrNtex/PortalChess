@@ -69,6 +69,12 @@ const ChessBoard = () => {
     setHighLights(DEFAULT_HIGHLIGHTS);
     setWhitePiecesCaptured([]);
     setBlackPiecesCaptured([]);
+    setKing({
+      whiteKingRow: 0,
+      whiteKingCol: 2,
+      blackKingRow: 7,
+      blackKingCol: 2,
+    });
   };
   const [currentTurn, setCurrentTurn] = useState(true);
   const hideNavigationBar = async () => {
@@ -113,7 +119,9 @@ const ChessBoard = () => {
   function TestForStalemate(){
     for(i = 0; i<8; i++){
       for(j=0; j<4; j++){
+        
         if(currentChessBoard[i][j] !== null){
+          console.log(currentChessBoard[i][j]);
           if(currentChessBoard[i][j] === "K" || currentChessBoard[i][j] === "k" || currentChessBoard[i][j] === "N" || currentChessBoard[i][j] === "n"){
             continue;
           }else{

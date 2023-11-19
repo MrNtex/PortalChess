@@ -770,7 +770,7 @@ const ChessBoard = () => {
               }
               if(desiredCol < 0 || desiredCol > 3){
                 if(currentChessBoard[desiredRow][desiredCol < 0 ? 3 : 0] !== null){
-                  if(!CheckForEnemyPiece(desiredRow,desiredCol,pieceColorWhite)){
+                  if(!CheckForEnemyPiece(desiredRow,desiredCol < 0 ? 3 : 0,pieceColorWhite)){
                     return;
                   }
                 }

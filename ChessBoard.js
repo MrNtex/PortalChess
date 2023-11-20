@@ -133,12 +133,6 @@ const ChessBoard = () => {
     return true;
   }
   useEffect(() => {
-    if(whitePiecesCaptured.length >= 6 && blackPiecesCaptured.length >= 6)
-    {
-      if(TestForStalemate){
-        setIsStaleMateModalVisible(true);
-      }
-    } 
     if (!CheckChessBoard(currentTurn)) {
       if(!SelectPiece(0,0,false,true)){
         setIsCheckMateModalVisible(true);

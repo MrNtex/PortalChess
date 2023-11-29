@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/Icon.png",
         "backgroundColor": "#000000"
       },
-      "versionCode": 4,
+      "versionCode": 8,
       "package": "com.anindustries.PortalChess"
     },
     "web": {

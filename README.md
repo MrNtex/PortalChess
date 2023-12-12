@@ -57,6 +57,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact 📬
 
-Your Name - [rtrniemiec@gmail.com](mailto:rtrniemiec@gmail.com)
+Artur Niemiec - [rtrniemiec@gmail.com](mailto:rtrniemiec@gmail.com)
 
 
